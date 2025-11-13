@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* =================================
+   SALICO BIMA THEME VARIABLES
+================================= */
+
+:root {
+  /* Background Colors */
+  --background: #fafbfc;
+  --background-secondary: #ffffff;
+  --background-accent: #f8fafc;
+  --background-minisidebar: #ffffff;
+  --background-logo: #b21f25;
+  
+  /* Text Colors - LIGHT THEME  */
+  --text-foreground: #334155;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-primary: #2a0f0f;
+}
+/* Dark Theme */
+[data-theme='dark'] {
+  /* Background Colors */
+   --background-secondary: #0f172a;
+  --background: #121a2d;
+  --background-accent: #334155;
+  --background-minisidebar: #0f172a;
+  --background-logo: #0167c6;
+
+  
+  /* Text Colors - DARK THEME */
+  --text-foreground: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-primary: #60a5fa;
+}
+
+/* =================================
+   BASE STYLES
+================================= */
+
+body, html, #root {
+  background: var(--background);
+  color: var(--text-foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#root {
+  background-color: var(--background);
+  color: var(--text-foreground);
+}
+
+
+/* Jodit Editor Theme Overrides */
+
+/* =================================
+   JODIT EDITOR OVERRIDES
+================================= */
+
+.jodit-container,
+.jodit-workplace,
+.jodit-wysiwyg,
+.jodit-popup,
+.jodit-popup__content {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-foreground) !important;
+}
+
+.jodit-container {
+  border: 1px solid var(--background-accent);
+}
+
+.jodit-toolbar__box {
+  background-color: var(--background) !important;
+  border-bottom: 1px solid var(--background-minisidebar);
+  color: var(--text-primary) !important;
+}
+
+.jodit-toolbar-button__button,
+.jodit-toolbar-button__trigger {
+  color: var(--text-primary) !important;
+}
+
+.jodit-toolbar-button__button:hover,
+.jodit-toolbar-button__trigger:hover {
+  background-color: var(--background-minisidebar) !important;
+}
+
+/* =================================
+   Dark Mode Toolbar Buttons
+================================= */
+
+[data-theme='dark'] .jodit-toolbar-button__button,
+[data-theme='dark'] .jodit-toolbar-button__trigger {
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .jodit-toolbar-button__button svg,
+[data-theme='dark'] .jodit-toolbar-button__trigger svg {
+  fill: #d6d6d6 !important;
+}
+
+[data-theme='dark'] .jodit-toolbar-button__button:hover,
+[data-theme='dark'] .jodit-toolbar-button__trigger:hover {
+  background-color: var(--background-minisidebar) !important;
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .jodit-toolbar-button__button:hover svg,
+[data-theme='dark'] .jodit-toolbar-button__trigger:hover svg {
+  fill: #ffffff !important;
+}
+
+/* Dark mode input fields inside Jodit popups */
+[data-theme='dark'] .jodit-popup input,
+[data-theme='dark'] .jodit-popup textarea,
+[data-theme='dark'] .jodit-popup select {
+  background-color: #1e293b !important; /* Darker background */
+  color: #ffffff !important; /* Text white */
+  border: 1px solid #334155 !important; /* Border for visibility */
+}
+
+[data-theme='dark'] .jodit-popup input::placeholder,
+[data-theme='dark'] .jodit-popup textarea::placeholder {
+  color: #94a3b8 !important; /* Lighter placeholder */
+}
+
+/* Optional: focus state */
+[data-theme='dark'] .jodit-popup input:focus,
+[data-theme='dark'] .jodit-popup textarea:focus,
+[data-theme='dark'] .jodit-popup select:focus {
+  border-color: #60a5fa !important; /* Accent color on focus */
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3) !important;
+}

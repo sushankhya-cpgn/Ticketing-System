@@ -1,0 +1,215 @@
+import { z } from "zod";
+import loginSchema from "../components/schema/loginSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile, userLogin } from "../features/user/authActions";
+import { useNavigate } from "react-router-dom";
+import TextFieldComponent from "../components/Fields/TextFieldComponent";
+import CheckboxField from "../components/Fields/CheckBoxField";
+import { type AppDispatch, type RootState } from "../app/store";
+import ButtonComponent from "../components/Buttons/button";
+import ThemeToggle from "../src/ThemeToggle";
+import { toast } from "react-toastify";
+
+type LoginFormProps = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const { loading, userInfo, access_token, error } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormProps>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
+
+//  const submitForm = async (data: LoginFormProps) => {
+//   try {
+//     const payload = { ...data };
+//     console.log(payload);
+
+//     // Step 1: Login
+//     await dispatch(userLogin(payload)).unwrap();
+//     toast.success("Login successful!");
+
+//     // Step 2: Fetch user data immediately after login
+//     const result = await dispatch(fetchUserProfile()).unwrap();
+
+//     // Step 3: Navigate when user data is available
+//     if (result && Object.keys(result).length > 0) {
+//       navigate("/", { replace: true });
+//     }
+//   } catch (err) {
+//     toast.error("Login failed. Please check your credentials.");
+//     console.error("Login failed:", err);
+//   }
+// };
+
+
+const submitForm = async (data: LoginFormProps) => {
+  try {
+    const payload = { ...data };
+    console.log(payload);
+
+    // Step 1: Login
+    const loginResult = await dispatch(userLogin(payload)).unwrap();
+    toast.success("Login successful!");
+
+    // Step 2: Fetch profile immediately
+    const profileResult = await dispatch(fetchUserProfile()).unwrap();
+
+    // Step 3: Only navigate if profile is valid
+    if (profileResult && Object.keys(profileResult).length > 0) {
+      toast.success("Welcome back!");
+      navigate("/", { replace: true });
+    } else {
+      toast.error("Failed to load user profile.");
+    }
+  } catch (err: any) {
+    const errorMessage = err?.message || "Login failed. Please check your credentials.";
+    toast.error(errorMessage);
+    console.error("Login failed:", err);
+  }
+};
+
+//  useEffect(() => {
+//   if (access_token && !userInfo) {
+//     dispatch(fetchUserProfile());
+//   } else if (access_token && userInfo) {
+//     navigate("/", { replace: true });
+//   }
+// }, [access_token, userInfo, navigate, dispatch]);
+
+useEffect(() => {
+  // Only run if already logged in (from cookies) and not on login page
+  if (access_token && userInfo) {
+    navigate("/", { replace: true });
+
+  } else if (access_token && !userInfo) {
+    // Try to restore session
+    dispatch(fetchUserProfile()).unwrap().catch(() => {
+      // Optional: logout if profile fails
+      // dispatch(userLogout());
+    });
+  }
+}, [access_token, userInfo, navigate, dispatch]);
+
+  return (
+    <>
+      <div className="flex justify-end p-4">
+        <ThemeToggle />
+      </div>
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{ background: "var(--background)" }}
+      >
+        <div
+          className="flex w-full max-w-4xl shadow-lg rounded-lg overflow-hidden h-[450px] gap-10"
+          style={{ background: "var(--background-secondary)" }}
+        >
+          {/* Left Side - Logo */}
+          <div
+            className="w-1/2 flex justify-center pl-2 rounded-lg items-center"
+            style={{ background: "var(--background-secondary)" }}
+          >
+            <img
+              src="/images/logo2.png"
+              alt="Logo"
+              className="max-w-full max-h-[100px]"
+              style={{ background: "var(--background-secondary)" }}
+            />
+          </div>
+
+          {/* Right Side - Login Form */}
+          <div
+            className="w-1/2 flex items-center justify-center"
+            style={{ background: "var(--background-secondary)" }}
+          >
+            <div className="w-full max-w-md p-6">
+              <h2
+                className="text-2xl font-bold text-center mb-2"
+                style={{ color: "var(--foreground)" }}
+              >
+                Login
+              </h2>
+
+              {error && (
+                <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+              )}
+
+              <form className="space-y-4" onSubmit={handleSubmit(submitForm)}>
+                {/* Username */}
+                <TextFieldComponent
+                  label="Username"
+                  name="username"
+                  placeholder="vwrapcode.info@gmail.com"
+                  register={register}
+                  errors={errors}
+                />
+
+                {/* Password */}
+                <div className="mt-5">
+                  <TextFieldComponent
+                    type="password"
+                    name="password"
+                    label="Password"
+                    placeholder="••••••••"
+                    register={register}
+                    errors={errors}
+                  />
+                </div>
+
+                {/* Remember Me + Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <CheckboxField
+                    label="Remember Me"
+                    edit={rememberMe}
+                    setEdit={setRememberMe}
+                  />
+                  <a
+                    href="#"
+                    className="text-xs hover:underline"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-center mt-4">
+                  <ButtonComponent type="submit" width="100%" disabled={loading}>
+                    {loading ? "Loading..." : "LOGIN"}
+                  </ButtonComponent>
+                </div>
+              </form>
+
+              <p
+                className="text-center mt-4 text-sm"
+                style={{ color: "var(--foreground)" }}
+              >
+                Don’t have an account?{" "}
+                <a
+                  href="#"
+                  className="hover:underline"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  Create an Account
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
