@@ -4,8 +4,6 @@ import "./App.css";
 import React, { Suspense } from "react";
 import LoginPage from "../pages/LoginPage";
 import useAuth from "../hooks/useAuth";
-import { useSelector } from "react-redux";
-import type { RootState } from "../app/store";
 import CircularLoader from "../components/Loader/CircularLoader";
 import CreateUserPage from "../pages/User/CreateUser";
 import EditUserPage from "../pages/User/EditUser";
@@ -26,32 +24,32 @@ import EditPriorityPage from "../pages/Ticket/EditPriority";
 import AddStatus from "../pages/Ticket/AddStatus";
 import EditStatusPage from "../pages/Ticket/EditStatus";
 import CreateTicketPage from "../pages/Ticket/CreateTicketPage";
+import EditTicketPage from "../pages/Ticket/EditTicket";
+import TicketPage from "../pages/Ticket/TicketPage";
+
 
 
 const DashboardPage = React.lazy(() => import("../pages/Dashboard"));
 const ReportPage = React.lazy(() => import("../pages/Report"));
 const CustomersPage = React.lazy(() => import("../pages/User/Customers"));
 const SettingsPage = React.lazy(() => import("../pages/Settings"));
-const HelpPage = React.lazy(() => import("../pages/Help"));
+const KanbanBoard = React.lazy(() => import("../pages/Board/BoardPage"));
 
 
 
 function ProtectedRoute() {
-  const { loading } = useSelector((state: RootState) => state.auth);
-  const { checkingToken, isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  if (checkingToken || loading) {
+  if (loading) {
     return (
       <div className="h-screen w-screen flex justify-center items-center text-7xl">
         <CircularLoader />
       </div>
     );
   }
+
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
-
-
-
 
 function App() {
   return (
@@ -83,10 +81,12 @@ function App() {
             <Route path="/ticket/status" element={<StatusPage/>}/>
             <Route path="/ticket/status/addstatus" element={<AddStatus/>}/>
             <Route path="/ticket/status/editstatus/:sid" element={<EditStatusPage/>}/>
+            <Route path="/ticket" element={<TicketPage/>}/>
             <Route path="/ticket/createticket" element={<CreateTicketPage/>}/>
+            <Route path="/ticket/editticket/:ticketid" element={<EditTicketPage/>}/>
             <Route path="/reports" element={<ReportPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
+            <Route path="/board" element={<KanbanBoard />} />
           </Route>
         </Routes>
       </Suspense>

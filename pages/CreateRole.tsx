@@ -1,14 +1,14 @@
 import CreateRoleForm from "../components/Forms/RoleForm"
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import type { RootState } from "../app/store";
 import api from "../src/api/axiosClient";
+import Cookies from "js-cookie";
 
 export default function CreateRole() {
-    const { access_token } = useSelector(
-        (state: RootState) => state.auth
-    );
+    // const { access_token } = useSelector(
+    //     (state: RootState) => state.auth
+    // );
+    const access_token = Cookies.get("accessToken");
     const navigate = useNavigate();
     console.log(access_token);
 

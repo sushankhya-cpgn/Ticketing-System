@@ -6,7 +6,7 @@ interface FileWithPreview extends File {
   preview: string;
 }
 
-export default function MyDropzone({className}: {className?: string}) {
+export default function MyDropzone({className,onFilesChange}: {className?: string,onFilesChange?: (files: FileWithPreview[]) => void}) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const onDrop = useCallback((acceptedFiles:any) => {
     // Do something with the files
@@ -17,9 +17,16 @@ export default function MyDropzone({className}: {className?: string}) {
           preview: URL.createObjectURL(file)
         })) 
       ]);
+
+    }
+    if(onFilesChange){
+      const newFiles = acceptedFiles.map((file: any) => Object.assign(file, {
+        preview: URL.createObjectURL(file) 
+      }));
+      onFilesChange(newFiles);
     }
     console.log(acceptedFiles);
-  }, [])
+  }, [onFilesChange])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
   return (

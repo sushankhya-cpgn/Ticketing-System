@@ -36,6 +36,8 @@ const navItems: NavItem[] = [
           { label: "Priority", path: "/ticket/priority" },
           { label: "Status", path: "/ticket/status" },
           { label: "Create Ticket", path: "/ticket/createticket" },
+          {label: "Tickets", path: "/ticket" },
+          {label: "Kanban Board", path: "/board" },
 
 
         ],

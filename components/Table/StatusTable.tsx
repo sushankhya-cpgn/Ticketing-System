@@ -4,13 +4,13 @@ import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
 import TableFilterBar from "./TableFilterBar";
 import { useDataTable } from "../../hooks/useDataTable";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
 import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
+import ProtectedAction from "../Auth/ProtectedAction";
+import Cookies from "js-cookie";
 
 interface StatusRecord {
   statusID: number;
@@ -25,7 +25,7 @@ const StatusTable: React.FC = () => {
     navigate(`/ticket/status/editstatus/${status.statusID}`);
 
   const [deleteStatus, setDeleteStatus] = useState<StatusRecord | null>(null);
-  const { access_token } = useSelector((state: RootState) => state.auth);
+  const access_token = Cookies.get("accessToken");
 
   // ✅ Handle Delete
   const handleDelete = (status: StatusRecord) => {
@@ -63,6 +63,7 @@ const StatusTable: React.FC = () => {
     token: access_token,
     searchableFields: ["statusID", "statusName", "isActive"],
     defaultSearchField: "statusName",
+    
   });
 
   const columns: Column<StatusRecord>[] = [
@@ -81,6 +82,7 @@ const StatusTable: React.FC = () => {
       flex: 1,
       render: (row) => (
         <div className="flex gap-4">
+          <ProtectedAction title="Edit Status" permission="Edit Ticket Status">
           <Tooltip title="Edit Status">
             <Edit
               size={18}
@@ -88,14 +90,15 @@ const StatusTable: React.FC = () => {
               onClick={() => handleEdit(row)}
             />
           </Tooltip>
+            </ProtectedAction>
 
-          <Tooltip title="Delete Status">
+          <ProtectedAction title="Edit Status" permission="Delete Ticket Status">
             <Trash2
               size={18}
               className="text-red-600 cursor-pointer"
               onClick={() => handleDelete(row)}
             />
-          </Tooltip>
+          </ProtectedAction>
         </div>
       ),
     },
@@ -166,7 +169,7 @@ const StatusTable: React.FC = () => {
           }}
           onAddClick={addStatus}
           addButtonLabel="Add Status"
-          
+          addButtonPermission="Create Ticket Status"
         />
 
         <VirtualizedTable<StatusRecord> data={tableData} columns={columns} />

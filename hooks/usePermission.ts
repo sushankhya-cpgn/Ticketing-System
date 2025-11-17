@@ -27,7 +27,7 @@
 // }
 export function usePermission() {
   // Fix: Parse JSON from localStorage (it returns string)
-  const storedTasks = localStorage.getItem("Tasks");
+  const storedTasks = localStorage.getItem("tasks");
   const allTasks: any[] = storedTasks ? JSON.parse(storedTasks) : [];
 
   // Extract task names

@@ -15,8 +15,7 @@ import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import { useDataTable } from "../../hooks/useDataTable";
 import { Edit, Trash2 } from "lucide-react";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
+import Cookies from "js-cookie";
 import Modal from "../Modal/Modal";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
 import api from "../../src/api/axiosClient";
@@ -35,8 +34,9 @@ interface TaskRecord {
 
 const TaskTable: React.FC = () => {
     const navigate = useNavigate();
-    const { access_token } = useSelector((state: RootState) => state.auth);
     const [deleteTask, setDeleteTask] = useState<TaskRecord | null>(null);
+    const access_token = Cookies.get("accessToken");
+
 
     const {
         loading,

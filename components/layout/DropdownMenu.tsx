@@ -13,9 +13,10 @@ import ContentPaste from "@mui/icons-material/ContentPaste";
 import Cloud from "@mui/icons-material/Cloud";
 import { Logout } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
-import { userLogout } from "../../features/user/authActions";
 import { toast } from "react-toastify";
 import type { AppDispatch } from "../../app/store";
+import { logoutUser } from "../../features/user/authslice";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   onItemClick: (item: string) => void;
@@ -26,9 +27,11 @@ type Props = {
 
 export default function DropdownMenu({ onItemClick, onMouseLeave }: Props) {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const handleLogout = async () => {
     try {
-      await dispatch(userLogout());
+      await dispatch(logoutUser());
+      navigate("/login");
       toast.success("Logged out successfully");
     } catch (err: any) {
       toast.error(err?.message ?? "Logout failed");

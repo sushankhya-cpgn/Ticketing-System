@@ -98,63 +98,80 @@
 
 
 //ai
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+// import { useEffect, useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import Cookies from "js-cookie";
+// import { fetchUserProfile, refreshtoken } from "../features/user/authActions";
+// import type { AppDispatch, RootState } from "../app/store";
+
+// export default function useAuth() {
+//   const dispatch = useDispatch<AppDispatch>();
+//   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+//   const loading = useSelector((state: RootState) => state.auth.loading);
+
+//   const access_token = Cookies.get("access_token") || null;
+//   const refresh_token = Cookies.get("refresh_token") || null;
+
+//   const [checkingToken, setCheckingToken] = useState(true);
+
+//   useEffect(() => {
+//     let isMounted = true;
+
+//     const initializeAuth = async () => {
+//       try {
+//         // Refresh if access token missing but refresh token exists
+//         if (!access_token && refresh_token) {
+//           await dispatch(refreshtoken()).unwrap();
+//         }
+
+//         // Re-read access token from cookies
+//         const currentAccessToken = Cookies.get("access_token");
+
+//         if (!currentAccessToken) {
+//           // No token → logout
+//           dispatch({ type: "auth/logout/fulfilled" });
+//         } else if (!userInfo) {
+//           // Token exists but no user info → fetch profile
+//           await dispatch(fetchUserProfile()).unwrap();
+//         }
+//       } catch (error) {
+//         console.error("Auth initialization failed:", error);
+//         dispatch({ type: "auth/logout/fulfilled" });
+//       } finally {
+//         if (isMounted) setCheckingToken(false);
+//       }
+//     };
+
+//     initializeAuth();
+
+//     return () => {
+//       isMounted = false;
+//     };
+//   }, [access_token, refresh_token, userInfo, dispatch]);
+
+//   return {
+//     isAuthenticated: !!Cookies.get("access_token"),
+//     userInfo,
+//     checkingToken,
+//     access_token,
+//     refresh_token,
+//     loading
+//   };
+// }
+import { useSelector } from "react-redux";
 import Cookies from "js-cookie";
-import { fetchUserProfile, refreshtoken } from "../features/user/authActions";
-import type { AppDispatch, RootState } from "../app/store";
+import type { RootState } from "../app/store";
 
 export default function useAuth() {
-  const dispatch = useDispatch<AppDispatch>();
-  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-  const loading = useSelector((state: RootState) => state.auth.loading);
+  const { accessToken, loading } = useSelector((state: RootState) => state.auth);
 
-  const access_token = Cookies.get("access_token") || null;
-  const refresh_token = Cookies.get("refresh_token") || null;
+  const cookieToken = Cookies.get("accessToken");
 
-  const [checkingToken, setCheckingToken] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        // Refresh if access token missing but refresh token exists
-        if (!access_token && refresh_token) {
-          await dispatch(refreshtoken()).unwrap();
-        }
-
-        // Re-read access token from cookies
-        const currentAccessToken = Cookies.get("access_token");
-
-        if (!currentAccessToken) {
-          // No token → logout
-          dispatch({ type: "auth/logout/fulfilled" });
-        } else if (!userInfo) {
-          // Token exists but no user info → fetch profile
-          await dispatch(fetchUserProfile()).unwrap();
-        }
-      } catch (error) {
-        console.error("Auth initialization failed:", error);
-        dispatch({ type: "auth/logout/fulfilled" });
-      } finally {
-        if (isMounted) setCheckingToken(false);
-      }
-    };
-
-    initializeAuth();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [access_token, refresh_token, userInfo, dispatch]);
+  // authenticated if token exists in redux OR cookies
+  const isAuthenticated = !!accessToken || !!cookieToken;
 
   return {
-    isAuthenticated: !!Cookies.get("access_token"),
-    userInfo,
-    checkingToken,
-    access_token,
-    refresh_token,
-    loading
+    isAuthenticated,
+    loading,
   };
 }

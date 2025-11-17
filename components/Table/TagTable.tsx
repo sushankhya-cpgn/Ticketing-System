@@ -2,20 +2,18 @@ import React, { useState } from "react";
 import {
     CircularProgress,
     Pagination,
-    Tooltip
 } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
 import TableFilterBar from "./TableFilterBar";
 import { useDataTable } from "../../hooks/useDataTable";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
 import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
+import Cookies from "js-cookie";
 
 interface TagRecord {
     tagID: number;
@@ -30,7 +28,8 @@ const TagTable: React.FC = () => {
      const handleEdit = (tag: TagRecord) => navigate(`/ticket/tag/edittag/${tag.tagID}`);
     const [deleteTag, setDeleteTag] = useState<TagRecord | null>(null);
      
-    const { access_token } = useSelector((state: RootState) => state.auth);
+    const access_token = Cookies.get("accessToken");
+
     const {
         loading,
         paginatedRows,
@@ -61,12 +60,12 @@ const TagTable: React.FC = () => {
             flex: 1,
             render: (row) => (
                 <div className="flex gap-4">
-                    <ProtectedAction title="Edit Tag" permission="Edit Tag">
+                    <ProtectedAction title="Edit Tag" permission="Edit Tags">
                         <Edit size={18} className="text-blue-600 cursor-pointer" onClick={() => handleEdit(row)}/>
                             </ProtectedAction>
-                    <Tooltip title="Delete Tag">
+                    <ProtectedAction title="Delete Tag" permission="Delete Tags">
                         <Trash2 size={18} className="text-red-600 cursor-pointer" onClick={() => handleDelete(row)}/>
-                    </Tooltip>
+                    </ProtectedAction>
                 </div>
             ),
         },
@@ -151,6 +150,7 @@ const TagTable: React.FC = () => {
                 ]}
                 onAddClick={addTag}
                 addButtonLabel="Add Tags"
+                addButtonPermission="Create Tags"
             />
 
             <VirtualizedTable<TagRecord> data={tableData} columns={columns} />

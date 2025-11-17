@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import api from "../../src/api/axiosClient";
 import UserForm from "../../components/Forms/UserForm";
+import Cookies from "js-cookie";
 
 export default function CreateUserPage() {
     const navigate = useNavigate();
-      const { access_token } = useSelector((state: RootState) => state.auth);
+    //   const { access_token } = useSelector((state: RootState) => state.auth);
+    const access_token = Cookies.get("accessToken");
 
 
     const handleCreate = async (data: any) => {

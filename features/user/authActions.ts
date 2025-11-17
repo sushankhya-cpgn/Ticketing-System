@@ -15,6 +15,7 @@ interface LoginResponse {
   expiration: string;
   displayName: string;
   role: string;
+  userID?:number
 }
 
 interface ApiResponse<T> {
@@ -83,7 +84,8 @@ export const userLogin = createAsyncThunk<
      
     );
 
-    console.log(roleTasks.data.data.roleTasks)
+    // console.log(roleTasks.data.data.roleTasks)
+    console.log(roleTasks.data.data)
 
     // Store tokens in cookies
     Cookies.set("access_token", userData.accessToken, {
@@ -123,6 +125,10 @@ localStorage.setItem("Tasks",JSON.stringify( roleTasks.data.data.allTasks));
     return rejectWithValue(err.response?.data?.message || err.message || "Login Failed");
   }
 });
+
+
+// authActions.ts
+
 
 // REGISTER
 export const registerUser = createAsyncThunk<

@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../src/api/axiosClient";
 import AddTagForm from "../../components/Forms/TagForm"
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
+import Cookies from "js-cookie";
 
 export default function AddTag(){
     const navigate = useNavigate();
-    const { access_token } = useSelector((state: RootState) => state.auth)
+    const access_token = Cookies.get("accessToken");
+
 
     const handleCreateTag = async(data:any)=>{
         try{

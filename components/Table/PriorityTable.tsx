@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { CircularProgress, Pagination, Tooltip } from "@mui/material";
+import { CircularProgress, Pagination } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
 import TableFilterBar from "./TableFilterBar";
 import { useDataTable } from "../../hooks/useDataTable";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
 import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
+import ProtectedAction from "../Auth/ProtectedAction";
+import Cookies from "js-cookie";
 
 interface PriorityRecord {
   priorityID: string;
@@ -28,7 +28,8 @@ const PriorityTable: React.FC = () => {
   const [deletePriority, setDeletePriority] =
     useState<PriorityRecord | null>(null);
 
-  const { access_token } = useSelector((state: RootState) => state.auth);
+    const access_token = Cookies.get("accessToken");
+
 
   // ✅ MUST be BEFORE columns
   const handleDelete = (priority: PriorityRecord) => {
@@ -78,21 +79,21 @@ const PriorityTable: React.FC = () => {
       flex: 1,
       render: (row) => (
         <div className="flex gap-4">
-          <Tooltip title="Edit Priority">
+          <ProtectedAction title="Edit Priority" permission="Edit Ticket Priority">
             <Edit
               size={18}
               className="text-blue-600 cursor-pointer"
               onClick={() => handleEdit(row)}
             />
-          </Tooltip>
-
-          <Tooltip title="Delete Priority">
+          
+          </ProtectedAction>
+          <ProtectedAction title="Delete Priority" permission="Delete Ticket Priority">
             <Trash2
               size={18}
               className="text-red-600 cursor-pointer"
               onClick={() => handleDelete(row)}
             />
-          </Tooltip>
+          </ProtectedAction>
         </div>
       ),
     },
@@ -163,6 +164,7 @@ const PriorityTable: React.FC = () => {
         }}
           onAddClick={addPriority}
           addButtonLabel="Add Priority"
+          addButtonPermission="Create Ticket Priority"
         />
 
         <VirtualizedTable<PriorityRecord> data={tableData} columns={columns} />

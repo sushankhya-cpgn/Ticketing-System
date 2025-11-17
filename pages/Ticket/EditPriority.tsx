@@ -1,16 +1,15 @@
 import  { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import api from "../../src/api/axiosClient";
-import type { RootState } from "../../app/store";
 import PriorityForm from "../../components/Forms/PriorityForm";
+import Cookies from "js-cookie";
 
 export default function EditPriorityPage() {
     const { pid } = useParams();
     const navigate = useNavigate();
     const [defaultValues, setDefaultValues] = useState<any>(null);
-    const {access_token} = useSelector((state:RootState)=>state.auth)
+    const access_token = Cookies.get("accessToken");
 
 
 

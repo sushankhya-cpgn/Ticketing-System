@@ -2,22 +2,28 @@ import  { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../src/api/axiosClient";
-import AddTaskForm from "../../components/Forms/TaskForm";
+import CreateTicketForm from "../../components/Forms/CreateTicketForm";
 import Cookies from "js-cookie";
 
-export default function EditTaskPage() {
-    const { taskid } = useParams();
+export default function EditTicketPage() {
+    const { ticketid } = useParams();
     const navigate = useNavigate();
     const [defaultValues, setDefaultValues] = useState<any>(null);
+  
     const access_token = Cookies.get("accessToken");
 
 
-
-
     useEffect(() => {
-        const fetchTask = async () => {
+        const fetchTicketInfo = async () => {
             try {
-                const res = await api.get(`/Task/GetById/${taskid}`);
+                console.log('Ticket id is',ticketid)
+                const res = await api.get(`/Ticket/GetById/${ticketid}`,
+                    {
+                        headers:{
+                            Authorization: `Bearer ${access_token}`
+                        }
+                    }
+                );
                 console.log('hi',res.data.data);
                 setDefaultValues(res.data.data);
             } catch (err) {
@@ -25,28 +31,30 @@ export default function EditTaskPage() {
                 toast.error("Failed to fetch task data");
             }
         };
-        fetchTask();
-    }, [taskid]);
+        fetchTicketInfo();
+    }, [ticketid,access_token]);
 
     const handleEdit = async (data: any) => {
         try {
-            await api.post(`/Task/Update/${taskid}`, data,
+            await api.put(`/Ticket/Update/${ticketid}`, data,
                 {
+                    params:{id:ticketid},
                     headers: { 
                        Authorization:`Bearer ${access_token} `
                     },
-                }
+                },
+                
             );
-            toast.success("Task updated successfully");
-            navigate("/task");
+            toast.success("Ticket updated successfully");
+            navigate("/ticket");
         } catch (err) {
             console.error(err);
-            toast.error("Failed to update task");
+            toast.error("Failed to update ticket");
         }
     };
 
     if (!defaultValues) return <div>Loading...</div>;
    
 
-    return <AddTaskForm defaultValues={defaultValues} onSubmit={handleEdit} />;
+    return <CreateTicketForm defaultValues={defaultValues} onSubmit={handleEdit} />;
 }

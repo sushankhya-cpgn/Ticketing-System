@@ -223,13 +223,12 @@ import { CircularProgress, Pagination } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import TableFilterBar from "../Table/TableFilterBar";
 import Modal from "../Modal/Modal";
 import AssignTasks from "../Tasks/AssignTasks";
 import api from "../../src/api/axiosClient";
 import { Edit, FilePlus} from "lucide-react";
+import Cookies from "js-cookie";
 import ProtectedAction from "../Auth/ProtectedAction";
 
 
@@ -251,7 +250,7 @@ interface Task {
 
 const RoleTable: React.FC = () => {
   const navigate = useNavigate();
-  const { access_token } = useSelector((state: RootState) => state.auth);
+    const access_token = Cookies.get("accessToken");
 
   const [assignTask, setAssignTask] = useState<RoleRecord | null>(null);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);

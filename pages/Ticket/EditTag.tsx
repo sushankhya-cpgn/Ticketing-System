@@ -1,16 +1,18 @@
 import  { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 import api from "../../src/api/axiosClient";
-import type { RootState } from "../../app/store";
+// import type { RootState } from "../../app/store";
 import AddTagForm from "../../components/Forms/TagForm";
+import Cookies from "js-cookie";
 
 export default function EditTagPage() {
     const { tagid } = useParams();
     const navigate = useNavigate();
     const [defaultValues, setDefaultValues] = useState<any>(null);
-    const {access_token} = useSelector((state:RootState)=>state.auth)
+  
+    const access_token = Cookies.get("accessToken");
 
 
 
@@ -36,7 +38,7 @@ export default function EditTagPage() {
 
     const handleEdit = async (data: any) => {
         try {
-            await api.put('/Tags', data,
+            await api.put('/Tags/UpdateTags', data,
                 {
                     params:{id:tagid},
                     headers: { 

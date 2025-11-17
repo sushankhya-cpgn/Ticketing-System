@@ -6,9 +6,8 @@ import SelectSearch from "../../components/Fields/SelectSearch";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {useSelector } from "react-redux";
-import type {  RootState } from "../../app/store";
 import api from "../../src/api/axiosClient";
+import Cookies from "js-cookie";
 
 interface Role {
     roleID: number;
@@ -58,9 +57,11 @@ export default function AddUserForm() {
     const [loading, setLoading] = useState<boolean>(true);
     const [apiError, setApiError] = useState<string | null>(null);
     const navigate = useNavigate()
-  const { access_token } = useSelector(
-    (state: RootState) => state.auth
-  );
+//   const { access_token } = useSelector(
+//     (state: RootState) => state.auth
+//   );
+
+    const access_token = Cookies.get("accessToken");
   
 
     // ─────── Sample branch options (static) ───────

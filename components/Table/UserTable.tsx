@@ -4,13 +4,12 @@ import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
 import { Edit, FilePlus } from "lucide-react";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import TableFilterBar from "./TableFilterBar";
 import Modal from "../Modal/Modal";
 import AssignUserTask from "../Tasks/AssignUserTask"
 import api from "../../src/api/axiosClient";
 import ProtectedAction from "../Auth/ProtectedAction";
+import Cookies from "js-cookie";
 
 interface UserRecord {
   userID: number;
@@ -28,7 +27,7 @@ interface Task {
 
 const UserTable: React.FC = () => {
   const navigate = useNavigate();
-  const { access_token } = useSelector((state: RootState) => state.auth);
+  const access_token = Cookies.get("accessToken");
   const [assignTask, setAssignTask] = useState<UserRecord | null>(null);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);

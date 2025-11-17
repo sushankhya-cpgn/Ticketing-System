@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import api from "../../src/api/axiosClient";
-import type { RootState } from "../../app/store";
 import StatusForm from "../../components/Forms/StatusForm";
+import Cookies from "js-cookie";
 
 export default function EditStatusPage() {
   const { sid } = useParams(); // expects route like /ticket/status/editstatus/:sid
   const navigate = useNavigate();
   const [defaultValues, setDefaultValues] = useState<any>(null);
-  const { access_token } = useSelector((state: RootState) => state.auth);
+  // const { access_token } = useSelector((state: RootState) => state.auth);
+  const access_token = Cookies.get("accessToken");
 
   useEffect(() => {
     const fetchStatus = async () => {

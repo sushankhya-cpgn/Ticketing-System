@@ -1,13 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../src/api/axiosClient";
-import { useSelector } from "react-redux";
 import AddStatusorm from "../../components/Forms/StatusForm"
-import type { RootState } from "../../app/store";
+import Cookies from "js-cookie";
 
 export default function AddStatus(){
     const navigate = useNavigate();
-    const { access_token } = useSelector((state: RootState) => state.auth)
+    const access_token = Cookies.get("accessToken");
 
     const handleCreateStatus = async(data:any)=>{
         try{

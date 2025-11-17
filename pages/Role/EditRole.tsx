@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import api from "../../src/api/axiosClient";
 import CreateRoleForm from "../../components/Forms/RoleForm";
+import Cookies from "js-cookie";
 
 
 export default function EditRolePage() {
     const { roleId } = useParams();
     const navigate = useNavigate();
     const [defaultValues, setDefaultValues] = useState<any>(null);
-    const { access_token } = useSelector((state: RootState) => state.auth)
+    const access_token = Cookies.get("accessToken");
+
 
     useEffect(() => {
         const fetchRole = async () => {
