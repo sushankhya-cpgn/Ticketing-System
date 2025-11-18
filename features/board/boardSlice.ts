@@ -1,4 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice,type PayloadAction } from "@reduxjs/toolkit";
+
+
+export interface TaskCardTypes {
+  id: string;
+  content: string;
+}
+
+export interface BoardColumn {
+  id: string;
+  title: string;
+  cards: TaskCardTypes[];
+}
+
+// interface BoardState {
+//   value: BoardColumn[];
+// }
 
 const initialState = {
   value: [
@@ -27,7 +43,7 @@ const boardSlice = createSlice({
   name: "board",
   initialState,
   reducers: {
-    setBoards: (state, action) => {
+    setBoards: (state, action:PayloadAction<BoardColumn[]>) => {
       state.value = action.payload;
     },
   },

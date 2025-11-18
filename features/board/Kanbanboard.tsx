@@ -8,6 +8,7 @@ import {
 import { setBoards } from "./boardSlice";
 import Column from "../../components/Column/Column"
 import TaskCard from "../../components/Card/TaskCard";
+import { type RootState } from "../../app/store";
 
 
 interface TaskCardTypes {
@@ -22,7 +23,7 @@ interface BoardColumn {
 }
 
 export default function KanbanBoard() {
-  const boards = useSelector((s) => s.board.value);
+  const boards = useSelector((s:RootState) => s.board.value);
   const dispatch = useDispatch();
 
   // Reorder the cards in the same column
