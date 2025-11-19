@@ -1,6 +1,5 @@
 import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import Layout from "../layout/Layout";
 import TextFieldComponent from "../Fields/TextFieldComponent";
 
 interface PriorityFormData {
@@ -31,7 +30,6 @@ const CreatePriorityForm: React.FC<PriorityFormProps> = ({
     const isEditMode = Boolean(defaultValues);
 
     return (
-        <Layout>
             <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -80,7 +78,6 @@ const CreatePriorityForm: React.FC<PriorityFormProps> = ({
                     </form>
                 </FormProvider>
             </div>
-        </Layout>
     )
 }
 

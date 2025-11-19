@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import Layout from "../layout/Layout";
 import TextFieldComponent from "../Fields/TextFieldComponent";
 import SelectSearch from "../Fields/SelectSearch";
 import api from "../../src/api/axiosClient";
@@ -96,28 +95,23 @@ const UserForm: React.FC<UserFormProps> = ({ defaultValues, onSubmit, submitLabe
 
     if (loading) {
         return (
-            <Layout>
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="text-lg font-medium text-gray-600">Loading options...</div>
                 </div>
-            </Layout>
         );
     }
 
     if (apiError) {
         return (
-            <Layout>
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="text-red-600 bg-red-50 p-4 rounded-lg">
                         <strong>Error:</strong> {apiError}
                     </div>
                 </div>
-            </Layout>
         );
     }
 
     return (
-        <Layout>
             <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -330,7 +324,6 @@ const UserForm: React.FC<UserFormProps> = ({ defaultValues, onSubmit, submitLabe
                     </form>
                 </FormProvider>
             </div>
-        </Layout>
     );
 };
 

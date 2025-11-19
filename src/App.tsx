@@ -13,7 +13,6 @@ import EditRolePage from "../pages/Role/EditRole";
 import TaskPage from "../pages/Task/TaskPage";
 import CreateTaskPage from "../pages/Task/AddTask";
 import EditTaskPage from "../pages/Task/EditTask";
-import RoleTaskPage from "../pages/RoleTaskPage";
 import TagsPage from "../pages/Ticket/TagsPage";
 import AddTag from "../pages/Ticket/AddTag";
 import EditTagPage from "../pages/Ticket/EditTag";
@@ -26,6 +25,7 @@ import EditStatusPage from "../pages/Ticket/EditStatus";
 import CreateTicketPage from "../pages/Ticket/CreateTicketPage";
 import EditTicketPage from "../pages/Ticket/EditTicket";
 import TicketPage from "../pages/Ticket/TicketPage";
+import Layout from "../components/layout/Layout";
 
 
 
@@ -48,7 +48,10 @@ function ProtectedRoute() {
     );
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return isAuthenticated ? 
+  <Layout>
+  <Outlet /> 
+  </Layout>: <Navigate to="/login" replace />;
 }
 
 function App() {
@@ -71,7 +74,6 @@ function App() {
             <Route path = "/task" element={<TaskPage/>}/>
             <Route path = "/task/addtask" element={<CreateTaskPage/>}/>
             <Route path="/task/edit/:taskid" element = {<EditTaskPage/>}/>
-            <Route path ="/role/assigntask/:roleid" element={<RoleTaskPage/>}/>
             <Route path="/ticket/tag" element={<TagsPage/>}/>
             <Route path="/ticket/tag/addtag" element={<AddTag />} />
             <Route path="/ticket/tag/edittag/:tagid" element={<EditTagPage />} />

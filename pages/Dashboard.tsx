@@ -1,9 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import Layout from "../components/layout/Layout";
 import Modal from "../components/Modal/Modal";
 import DeleteButtonComponent from "../components/Buttons/DeleteButton";
-import KYCListPage from "../components/Table/UserTable";
-import {type Descendant } from "slate";
 import JoditEditor from "jodit-react";
 import Cookies from "js-cookie";
 
@@ -13,16 +10,10 @@ export default function DashboardPage() {
   const [confirmModal, setConfirmModal] = useState(false);
   const [formModal, setFormModal] = useState(false);
   // const [userData, setUserData] = useState({ name: "", email: "" });
-  const [searchKYC, setSearchKYC] = useState<boolean>(false);
 
   console.log(Cookies.get("task"));
   
-   const [value, setValue] = useState<Descendant[]>();
-
-  const onChange = (value: Descendant[]) => {
-    setValue(value);
-  };
-
+  
   console.log(Cookies.get("userInfo"))
 
 const Example = ({ placeholder }: { placeholder?: string }) => {
@@ -84,16 +75,10 @@ const Example = ({ placeholder }: { placeholder?: string }) => {
     setConfirmModal(false);
   };
 
-  // const handleSaveUser = () => {
-  //   // Your save logic here
-  //   console.log("User saved:", userData);
-  //   setFormModal(false);
-  //   setUserData({ name: "", email: "" });
-  // };
 
   return (
 <>
-    <Layout>
+    
       <div className="space-y-6">
         {/* Page Header */}
         <div>
@@ -251,14 +236,14 @@ const Example = ({ placeholder }: { placeholder?: string }) => {
         </Modal>
 
         {/* Form Modal */}
-        <Modal
+        {/* <Modal
           isOpen={formModal}
           onClose={() => setFormModal(false)}
           title="Add New User"
           size="full"
         >
        <KYCListPage setSearchKYC={setSearchKYC} />
-        </Modal>
+        </Modal> */}
 
 
       </div>
@@ -277,7 +262,6 @@ const Example = ({ placeholder }: { placeholder?: string }) => {
 
 
       
-    </Layout>
   
 </>
 

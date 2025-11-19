@@ -1,6 +1,5 @@
 
 import { useForm, FormProvider } from "react-hook-form";
-import Layout from "../layout/Layout";
 import TextFieldComponent from "../Fields/TextFieldComponent";
 import FormHeader from "./Header";
 
@@ -32,7 +31,6 @@ const AddTaskForm = ({ onSubmit, defaultValues }:TaskFormProps) => {
 
 
     return (
-        <Layout>
             <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -114,7 +112,6 @@ const AddTaskForm = ({ onSubmit, defaultValues }:TaskFormProps) => {
                     </form>
                 </FormProvider>
             </div>
-        </Layout>
     );
 };
 

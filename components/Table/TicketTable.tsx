@@ -3,12 +3,7 @@ import { CircularProgress, Pagination} from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
-// import { Edit, FilePlus, Ticket } from "lucide-react";
 import TableFilterBar from "./TableFilterBar";
-// import Modal from "../Modal/Modal";
-// import AssignUserTask from "../Tasks/AssignUserTask"
-// import api from "../../src/api/axiosClient";
-// import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
 import ProtectedAction from "../Auth/ProtectedAction";
 import { Edit, Trash2 } from "lucide-react";

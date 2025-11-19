@@ -1,6 +1,5 @@
 import { useForm, FormProvider } from "react-hook-form";
 import TextFieldComponent from "../Fields/TextFieldComponent";
-import Layout from "../layout/Layout";
 
 interface TagFormData {
   tagName: string;
@@ -21,7 +20,6 @@ const AddTagForm = ({ onSubmit, defaultValues }: TagFormProps) => {
   const { register, handleSubmit, formState: { errors } } = methods;
 
   return (
-    <Layout>
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -60,7 +58,6 @@ const AddTagForm = ({ onSubmit, defaultValues }: TagFormProps) => {
           </form>
         </FormProvider>
       </div>
-      </Layout>
   );
 };
 

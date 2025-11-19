@@ -1,6 +1,5 @@
 import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import Layout from "../layout/Layout";
 import TextFieldComponent from "../Fields/TextFieldComponent";
 import SelectSearch from "../Fields/SelectSearch";
 import FormHeader from "./Header";
@@ -48,7 +47,6 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     ];
 
     return (
-        <Layout>
             <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -124,7 +122,6 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     </form>
                 </FormProvider>
             </div>
-        </Layout>
     );
 };
 

@@ -1,6 +1,5 @@
 import { useForm, FormProvider } from "react-hook-form";
 import TextFieldComponent from "../Fields/TextFieldComponent";
-import Layout from "../layout/Layout";
 
 interface StatusFormData {
   statusName: string;
@@ -25,7 +24,6 @@ const StatusForm = ({ onSubmit, defaultValues }: StatusFormProps) => {
   } = methods;
 
   return (
-    <Layout>
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -65,7 +63,6 @@ const StatusForm = ({ onSubmit, defaultValues }: StatusFormProps) => {
           </form>
         </FormProvider>
       </div>
-    </Layout>
   );
 };
 

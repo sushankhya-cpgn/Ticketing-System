@@ -171,7 +171,6 @@ export default function AddUserForm() {
     }
 
     return (
-        <Layout>
             <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -363,6 +362,5 @@ export default function AddUserForm() {
                     </form>
                 </FormProvider>
             </div>
-        </Layout>
     );
 }

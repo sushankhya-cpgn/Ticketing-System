@@ -56,15 +56,7 @@ const UserTable: React.FC = () => {
 
   const addUser = () => navigate("/customers/adduser");
   const handleEdit = (user: UserRecord) => navigate(`/customers/edituser/${user.userID}`);
-  // const [availableTasks, setAvailableTasks] = useState([
-  //   { id: "1", name: "Create User" },
-  //   { id: "2", name: "Manage Projects" },
-  //   { id: "3", name: "View Reports" },
-  // ]);
-
-  // const [assignedTasks, setAssignedTasks] = useState([
-  //   { id: "4", name: "Edit Profile" },
-  // ]);
+ 
   const handleAssignUserTask = async (user: UserRecord) => {
     setAssignTask(user); // Open modal
 
@@ -109,10 +101,6 @@ const UserTable: React.FC = () => {
       console.error("Error fetching role tasks:", error);
     }
   };
-
-
-
-
 
   const columns: Column<UserRecord>[] = [
     { label: "ID", field: "userID", flex: 0.5 },
@@ -174,7 +162,7 @@ const UserTable: React.FC = () => {
         <div className="w-full flex flex-col items-center">
           <div className="w-full max-w-4xl px-6">
             <AssignUserTask
-              userId={assignTask?.userID}
+              userId={assignTask?.userID ?? 0}
               accessToken={access_token ?? ""}
               availableTasks={availableTasks}
               assignedTasks={assignedTasks}
@@ -185,75 +173,7 @@ const UserTable: React.FC = () => {
 
         </div>
       </Modal>
-      {/* <div className="flex flex-wrap items-center justify-between px-6 py-4 gap-4 border-b">
-        <div className="flex gap-4 flex-wrap items-center">
-          <SelectSearch
-            label="Field"
-            value={searchField}
-            onChange={(v) => {
-              setSearchField(v as keyof UserRecord);
-              setSearchText("");
-              setSearchSelect("");
-              setPage(1);
-            }}
-            options={[
-              { label: "Name", value: "displayName" },
-              { label: "Username", value: "userName" },
-              { label: "Email", value: "email" },
-              { label: "Role", value: "roleName" },
-              { label: "Status", value: "userStatusName" },
-              
-            ]}
-            width="200px"
-          />
-
-          {dropdownFields.includes(searchField) ? (
-            <SelectSearch
-              label="Select"
-              value={searchSelect}
-              onChange={(v) => setSearchSelect(String(v))}
-              options={selectOptions[searchField]!}
-              width="200px"
-            />
-          ) : (
-            <TextFieldComponent
-              type="text"
-              label="Search"
-              name="search"
-              width="250px"
-              placeholder="Search..."
-              value={searchText}
-              onChange={(e:any) => setSearchText(e.target.value)}
-              height="40px"
-            />
-          )}
-        </div>
-
-        <div>
-          <ButtonComponent onClick={addUser} sx={{ backgroundColor: "green", marginRight: "20px" }}>
-            Add User
-          </ButtonComponent>
-
-          <FormControl size="small">
-            <InputLabel>Rows</InputLabel>
-            <Select
-              label="Rows"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(e.target.value as number | "all");
-                setPage(1);
-              }}
-              style={{ minWidth: 120 }}
-            >
-              {[50, 100, 200, "all"].map((size) => (
-                <MenuItem key={size} value={size}>
-                  {size === "all" ? "All" : size}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-      </div> */}
+  
       <TableFilterBar
         searchField={searchField}
         setSearchField={setSearchField}

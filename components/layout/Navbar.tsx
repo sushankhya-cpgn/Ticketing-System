@@ -4,7 +4,9 @@ import { useTheme } from "../../hooks/useTheme";
 import { useState, useCallback, useEffect } from "react";
 import NepaliDate from "nepali-date-converter";
 import DropdownMenu from "./DropdownMenu";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../app/store";
 
 
 
@@ -16,19 +18,21 @@ export default function Navbar({ isOpen, toggleSidebar }: { isOpen: boolean; tog
   const handleMenuItemClick = useCallback(() => setDropdownVisible(false), []);
   const handleMouseLeaves = useCallback(() => setDropdownVisible(false), []);
   const handleDropdownToggle = useCallback(() => setDropdownVisible((prev) => !prev), []);
-  const [username,setUsername] = useState("");
+  const [username,setUsername] = useState<string|null>("");
+  const displayName = useSelector((state:RootState)=>state.auth.displayName);
   
   useEffect(()=>{
 
     try{
-      const {displayName} =  JSON.parse(Cookies.get("userInfo") || "")
-      console.log(Cookies.get("userInfo"));
+      // const {displayName} =  JSON.parse(Cookies.get("userInfo") || "")
+      
+      // console.log(Cookies.get("userInfo"));
       setUsername(displayName);
     }
     catch(err){
       console.error(err)
     }
-  },[])
+  },[displayName])
 
 
   return (
