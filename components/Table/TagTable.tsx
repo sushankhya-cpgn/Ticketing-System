@@ -14,6 +14,7 @@ import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
+// import { TagApi } from "../../src/api/tagApi";
 
 interface TagRecord {
     tagID: number;
@@ -93,6 +94,7 @@ const TagTable: React.FC = () => {
                 },
                 params:{id:deleteTag?.tagID}
             });
+            // await TagApi.deleteTag(deleteTag?.tagID)
             setDeleteTag(null);
             window.location.reload();
     }

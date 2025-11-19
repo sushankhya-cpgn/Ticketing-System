@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import api from "../../src/api/axiosClient";
 import UserForm from "../../components/Forms/UserForm";
 import Cookies from "js-cookie";
+import { UserApi } from "../../src/api/userApi";
 
 export default function EditUserPage() {
     const { id } = useParams();
@@ -16,12 +17,13 @@ export default function EditUserPage() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await api.get(`/User/GetUserById`,{
-                    params:{userId:id},
-                    headers:{
-                        Authorization: `Bearer ${access_token}`
-                    }
-                });
+                // const res = await api.get(`/User/GetUserById`,{
+                //     params:{userId:id},
+                //     headers:{
+                //         Authorization: `Bearer ${access_token}`
+                //     }
+                // });
+                const res = await UserApi.getUserById(id!);
                 console.log(res.data);
                 setDefaultValues(res.data.data);
             } catch (err) {

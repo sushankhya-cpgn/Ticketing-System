@@ -1,52 +1,31 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-// import { useSelector } from "react-redux";
-import api from "../../src/api/axiosClient";
-// import type { RootState } from "../../app/store";
 import AddTagForm from "../../components/Forms/TagForm";
-import Cookies from "js-cookie";
+import { TagApi } from "../../src/api/tagApi";
 
 export default function EditTagPage() {
     const { tagid } = useParams();
     const navigate = useNavigate();
     const [defaultValues, setDefaultValues] = useState<any>(null);
-  
-    const access_token = Cookies.get("accessToken");
-
-
 
     useEffect(() => {
         const fetchTag = async () => {
             try {
-                const res = await api.get(`/Tags/GetById/${tagid}`,
-                    {
-                        headers:{
-                            Authorization: `Bearer ${access_token}`
-                        }
-                    }
-                );
-                console.log('hi',res.data.data);
+                const res = await TagApi.getTagById(tagid!);
                 setDefaultValues(res.data.data);
             } catch (err) {
                 console.error(err);
-                toast.error("Failed to fetch task data");
+                toast.error("Failed to fetch tag data");
             }
         };
+
         fetchTag();
-    }, [tagid,access_token]);
+    }, [tagid]);
 
     const handleEdit = async (data: any) => {
         try {
-            await api.put('/Tags/UpdateTags', data,
-                {
-                    params:{id:tagid},
-                    headers: { 
-                       Authorization:`Bearer ${access_token} `
-                    },
-                },
-                
-            );
+            await TagApi.updateTag(tagid!, data);
             toast.success("Tag updated successfully");
             navigate("/ticket/tag");
         } catch (err) {
@@ -56,7 +35,6 @@ export default function EditTagPage() {
     };
 
     if (!defaultValues) return <div>Loading...</div>;
-   
 
     return <AddTagForm defaultValues={defaultValues} onSubmit={handleEdit} />;
 }

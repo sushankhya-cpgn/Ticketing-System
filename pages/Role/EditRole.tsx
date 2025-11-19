@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import api from "../../src/api/axiosClient";
 import CreateRoleForm from "../../components/Forms/RoleForm";
 import Cookies from "js-cookie";
+import { RoleApi } from "../../src/api/roleApi";
 
 
 export default function EditRolePage() {
@@ -16,12 +17,13 @@ export default function EditRolePage() {
     useEffect(() => {
         const fetchRole = async () => {
             try {
-                const res = await api.get(`/Role/GetRoleById`, {
-                    params: { id: roleId },
-                    headers: {
-                        Authorization: `Bearer ${access_token}`
-                    }
-                });
+                // const res = await api.get(`/Role/GetRoleById`, {
+                //     params: { id: roleId },
+                //     headers: {
+                //         Authorization: `Bearer ${access_token}`
+                //     }
+                // });
+                const res = await RoleApi.getById(roleId!);
                 console.log(res.data.data);
                 setDefaultValues(res.data.data)
 
