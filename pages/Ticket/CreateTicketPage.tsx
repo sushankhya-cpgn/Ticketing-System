@@ -1,36 +1,59 @@
 import { toast } from "react-toastify";
 import CreateTicketForm from "../../components/Forms/CreateTicketForm";
-import api from "../../src/api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-
+import api from "../../src/api/axiosClient";
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
-  async function handleCreateTicket(formData: FormData) {
+
+  const access_token = Cookies.get("accessToken");
+  const userInfo = Cookies.get("userInfo");
+
+  async function handleCreateTicket(data: any) {
     try {
-      console.log("Form Data Submitted:", formData);
-      const formwithcreatedBy = {...formData, createdBy: userInfo ? JSON.parse(userInfo).userID : null};
-      const response = await api.post('/Ticket/Create', formwithcreatedBy, {
+      const createdBy = userInfo ? JSON.parse(userInfo).userID : null;
+
+      const formData = new FormData();
+
+      formData.append("title", data.title);
+      formData.append("statusID", String(data.statusID));
+      formData.append("priorityID", String(data.priorityID));
+      formData.append("assignedTo", String(data.assignedTo));
+      formData.append("roleID", String(data.roleID));
+      formData.append("description", data.description);
+      formData.append("createdBy", createdBy);
+
+      // Append tagIDs
+      if (Array.isArray(data.tagIDs)) {
+        data.tagIDs.forEach((tag: number) => {
+          formData.append("tagIDs", String(tag));
+        });
+      }
+
+      // Append files
+      if (data.files && data.files.length > 0) {
+        data.files.forEach((file: File) => {
+          formData.append("files", file);
+         
+        });
+      }
+
+       await api.post("/Ticket/Create", formData, {
         headers: {
-          "Authorization": `Bearer ${access_token}`,
-          "Content-Type": "application/json"
-        }
+          Authorization: `Bearer ${access_token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
-      toast.success('Ticket created successfully');
-      console.log('Ticket created successfully:', response.data);
-      navigate("/");
+
+      toast.success("Ticket created successfully");
       
-    } catch (error: any) {
-      toast.error('Failed to create ticket');
-      console.error('Error creating ticket:', error);
+      navigate("/ticket");
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+      toast.error("Failed to create ticket");
     }
   }
 
-  // const { access_token,userID } = useSelector((state: RootState) => state.auth)
-      const access_token = Cookies.get("accessToken");
-      const userInfo = Cookies.get("userInfo");
-  return (
-    <CreateTicketForm onSubmit={handleCreateTicket} />
-  )
+  return <CreateTicketForm onSubmit={handleCreateTicket} />;
 }

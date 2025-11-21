@@ -1,9 +1,9 @@
 import  { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../src/api/axiosClient";
 import CreateTicketForm from "../../components/Forms/CreateTicketForm";
 import Cookies from "js-cookie";
+import { TicketApi } from "../../src/api/ticketApi";
 
 export default function EditTicketPage() {
     const { ticketid } = useParams();
@@ -17,13 +17,7 @@ export default function EditTicketPage() {
         const fetchTicketInfo = async () => {
             try {
                 console.log('Ticket id is',ticketid)
-                const res = await api.get(`/Ticket/GetById/${ticketid}`,
-                    {
-                        headers:{
-                            Authorization: `Bearer ${access_token}`
-                        }
-                    }
-                );
+                const res = await TicketApi.getTicketById(ticketid)
                 console.log('hi',res.data.data);
                 setDefaultValues(res.data.data);
             } catch (err) {
@@ -36,15 +30,7 @@ export default function EditTicketPage() {
 
     const handleEdit = async (data: any) => {
         try {
-            await api.put(`/Ticket/Update/${ticketid}`, data,
-                {
-                    params:{id:ticketid},
-                    headers: { 
-                       Authorization:`Bearer ${access_token} `
-                    },
-                },
-                
-            );
+            await TicketApi.updateTicket(ticketid,data)
             toast.success("Ticket updated successfully");
             navigate("/ticket");
         } catch (err) {

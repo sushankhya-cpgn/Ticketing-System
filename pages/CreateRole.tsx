@@ -1,8 +1,8 @@
 import CreateRoleForm from "../components/Forms/RoleForm"
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../src/api/axiosClient";
 import Cookies from "js-cookie";
+import { RoleApi } from "../src/api/roleApi";
 
 export default function CreateRole() {
     const access_token = Cookies.get("accessToken");
@@ -11,15 +11,16 @@ export default function CreateRole() {
 
     const submitRole = async (data: any) => {
         try {
-            await api.post(
-                "/Role/CreateRole",
-                data,  
-                {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`
-                    }
-                } 
-            );
+            // await api.post(
+            //     "/Role/CreateRole",
+            //     data,  
+            //     {
+            //         headers: {
+            //             Authorization: `Bearer ${access_token}`
+            //         }
+            //     } 
+            // );
+            await RoleApi.create(data);
             toast.success("Role Created Successfully");
             navigate("/role");
         }

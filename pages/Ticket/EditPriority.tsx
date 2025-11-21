@@ -1,9 +1,9 @@
 import  { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../src/api/axiosClient";
 import PriorityForm from "../../components/Forms/PriorityForm";
 import Cookies from "js-cookie";
+import { TicketPriorityApi } from "../../src/api/ticketpriorityApi";
 
 export default function EditPriorityPage() {
     const { pid } = useParams();
@@ -16,13 +16,7 @@ export default function EditPriorityPage() {
     useEffect(() => {
         const fetchPriority = async () => {
             try {
-                const res = await api.get(`/TicketPriority/GetById/${pid}`,
-                    {
-                        headers:{
-                            Authorization: `Bearer ${access_token}`
-                        },
-                    }
-                );
+                const res = await TicketPriorityApi.getByIdTicketPriority(pid)
                 console.log('hi',res.data.data);
                 setDefaultValues(res.data.data);
             } catch (err) {
@@ -35,15 +29,7 @@ export default function EditPriorityPage() {
 
     const handleEdit = async (data: any) => {
         try {
-            await api.put('/TicketPriority/UpdateTicketPriority', data,
-                {
-                    params:{id:pid},
-                    headers: { 
-                       Authorization:`Bearer ${access_token} `
-                    },
-                },
-                
-            );
+            await TicketPriorityApi.updateTicketPriority(pid,data);
             toast.success("Priority updated successfully");
             navigate("/ticket/priority");
         } catch (err) {

@@ -10,6 +10,7 @@
 
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const api = axios.create({
   baseURL: "http://192.168.5.8/api",
@@ -52,6 +53,7 @@ api.interceptors.response.use(
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
         window.location.href = "/login";
+        toast.error("Session expired. Please log in again.");
         console.error("Refresh token failed:", err);
       }
     }
