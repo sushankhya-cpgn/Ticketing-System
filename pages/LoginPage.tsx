@@ -12,7 +12,9 @@ import { type AppDispatch, type RootState } from "../app/store";
 import ButtonComponent from "../components/Buttons/button";
 import ThemeToggle from "../src/ThemeToggle";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
+import useAuth from "../hooks/useAuth";
+import { CircularProgress } from "@mui/material";
 
 type LoginFormProps = z.infer<typeof loginSchema>;
 
@@ -20,7 +22,7 @@ export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const { loading, accessToken, error } = useSelector(
+  const {  error } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -54,12 +56,28 @@ export default function LoginPage() {
   // ---------------------------------------
   // AUTO-LOGIN FROM COOKIES
   // ---------------------------------------
-  useEffect(() => {
-    const token = Cookies.get("accessToken");
-    if (token && accessToken) {
-      navigate("/", { replace: true });
-    }
-  }, [accessToken, navigate]);
+  // useEffect(() => {
+  //   const token = Cookies.get("accessToken");
+  //   if (token && accessToken) {
+  //     navigate("/", { replace: true });
+  //   }
+  // }, [accessToken, navigate]);
+
+  const { isAuthenticated, loading } = useAuth();
+
+useEffect(() => {
+  if (isAuthenticated && !loading) {
+    navigate("/", { replace: true });
+  }
+}, [isAuthenticated, loading, navigate]);
+
+if(loading || isAuthenticated){
+  return(
+     <div className="flex items-center justify-center h-[70vh]">
+            <CircularProgress />
+          </div>
+  );
+}
 
   return (
        <>

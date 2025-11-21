@@ -1,22 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../src/api/axiosClient";
 import AddPriorityForm from "../../components/Forms/PriorityForm"
-import Cookies from "js-cookie";
+import { TicketPriorityApi } from "../../src/api/ticketpriorityApi";
 
 
 export default function AddPriority(){
     const navigate = useNavigate();
-    const access_token = Cookies.get("accessToken");
 
 
     const handleCreatePriority = async(data:any)=>{
         try{
-            const res = await api.post("/TicketPriority/CreateTicketPriority",data,{
-                headers:{
-                    Authorization:`Bearer ${access_token}`
-                }
-            });
+            console.log(data);
+            const res = await TicketPriorityApi.createTicketPriority(data);
             console.log(res);
             toast.success("Priority Created Successfully");
             navigate("/ticket/priority");

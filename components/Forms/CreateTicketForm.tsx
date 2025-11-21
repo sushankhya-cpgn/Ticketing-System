@@ -190,10 +190,15 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
                   />
 
                   {/* File Upload */}
-                  <MydropZone
+                  {/* <MydropZone
                     onFilesChange={(files: File[]) => setValue("files", files)}
                     className="p-16 mt-4 border"
-                  />
+                  /> */}
+
+                  <MydropZone
+  onFilesChange={(files) => setValue("files", files, { shouldValidate: true })}
+  className="p-16 mt-4 border"
+/>
 
                 </div>
               </section>

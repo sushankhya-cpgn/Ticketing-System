@@ -8,25 +8,19 @@ interface FileWithPreview extends File {
 
 export default function MyDropzone({className,onFilesChange}: {className?: string,onFilesChange?: (files: FileWithPreview[]) => void}) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
-  const onDrop = useCallback((acceptedFiles:any) => {
-    // Do something with the files
-    if(acceptedFiles && acceptedFiles.length > 0){
-      setFiles(previousFiles => [
-        ...previousFiles,
-        ...acceptedFiles.map((file: any) => Object.assign(file, {
-          preview: URL.createObjectURL(file)
-        })) 
-      ]);
 
-    }
-    if(onFilesChange){
-      const newFiles = acceptedFiles.map((file: any) => Object.assign(file, {
-        preview: URL.createObjectURL(file) 
-      }));
-      onFilesChange(newFiles);
-    }
-    console.log(acceptedFiles);
-  }, [onFilesChange])
+  const onDrop = useCallback((acceptedFiles:any) => {
+  const newFiles = acceptedFiles.map((file:any) =>
+    Object.assign(file, { preview: URL.createObjectURL(file) })
+  );
+
+  setFiles((prev) => {
+    const updated = [...prev, ...newFiles];
+    if (onFilesChange) onFilesChange(updated);
+    return updated;
+  });
+}, [onFilesChange]);
+
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
   return (

@@ -10,7 +10,7 @@ import { Edit, Trash2 } from "lucide-react";
 import Modal from "../Modal/Modal";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
-import api from "../../src/api/axiosClient";
+import { TicketApi } from "../../src/api/ticketApi";
 
 interface TicketRecord {
     ticketID: number;
@@ -60,11 +60,12 @@ const TicketTable: React.FC = () => {
     
     const handleConfirmDelete = async() =>{
             if(!deleteTicket) return;
-            await api.delete(`/Ticket/Delete/${deleteTicket?.ticketID}`,{
-                headers:{
-                    Authorization:`Bearer ${access_token}`
-                },
-            });
+            // await api.delete(`/Ticket/Delete/${deleteTicket?.ticketID}`,{
+            //     headers:{
+            //         Authorization:`Bearer ${access_token}`
+            //     },
+            // });
+            await TicketApi.deleteTicket(deleteTicket?.ticketID)
             setDeleteTicket(null);
             window.location.reload();
     }
