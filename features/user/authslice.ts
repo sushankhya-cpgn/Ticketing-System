@@ -72,8 +72,12 @@ export const loginUser = createAsyncThunk<
       const data = loginResponse.data.data;
 
       // Save tokens
-      Cookies.set("accessToken", data.accessToken);
-      Cookies.set("refreshToken", data.refreshToken);
+      Cookies.set("accessToken", data.accessToken,{
+        expires:7
+      });
+      Cookies.set("refreshToken", data.refreshToken,{
+        expires:7
+      });
 
       // Save user info
       Cookies.set(
@@ -82,7 +86,9 @@ export const loginUser = createAsyncThunk<
           userID: data.userID,
           displayName: data.displayName,
           role: data.role,
-        })
+        }),{
+          expires:7
+        }
       );
 
 
@@ -124,6 +130,8 @@ export const loginUser = createAsyncThunk<
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   Cookies.remove("accessToken");
   Cookies.remove("refreshToken");
+  Cookies.remove("userInfo");
+
   localStorage.removeItem("tasks");
 
   return true;

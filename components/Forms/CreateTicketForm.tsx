@@ -104,119 +104,119 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
   if (apiError) return <div className="flex items-center justify-center min-h-screen text-red-600">{apiError}</div>;
 
   return (
-      <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6" encType="multipart/form-data">
-            <div className="rounded-lg shadow-sm">
+    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6" encType="multipart/form-data">
+          <div className="rounded-lg shadow-sm">
 
-              {/* Ticket Details */}
-              <section className="border-b border-gray-200">
-                <FormHeader title={defaultValues ? "Edit Ticket" : "Create Ticket"} />
-                <div className="p-6 space-y-4">
+            {/* Ticket Details */}
+            <section className="border-b border-gray-200">
+              <FormHeader title={defaultValues ? "Edit Ticket" : "Create Ticket"} />
+              <div className="p-6 space-y-4">
 
-                  {/* Row 1: Title & Status */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <TextFieldComponent
-                      label="Title"
-                      name="title"
-                      register={register}
-                      errors={errors}
-                      required
-                      placeholder="Enter ticket title"
-                      height="50px"
-                    />
-                    <SelectSearch
-                      label="Status"
-                      name="statusID"
-                      options={statusOptions}
-                      required
-                      errors={errors}
-                      placeholder="Select Status"
-                      height="50px"
-                    />
-                  </div>
-
-                  {/* Row 2: Priority & Assigned To */}
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <SelectSearch
-                      label="Priority"
-                      name="priorityID"
-                      options={priorityOptions}
-                      required
-                      errors={errors}
-                      placeholder="Select Priority"
-                      height="50px"
-                    />
-                    <SelectSearch
-                      label="Assigned To"
-                      name="assignedTo"
-                      options={assignedToOptions}
-                      required
-                      errors={errors}
-                      placeholder="Select User"
-                      height="50px"
-                    />
-                  </div>
-
-                  {/* Row 3: Role & Tags */}
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <SelectSearch
-                      label="Role"
-                      name="roleID"
-                      options={roleOptions}
-                      required
-                      errors={errors}
-                      placeholder="Select Role"
-                      height="50px"
-                    />
-                    <MultiSelectChip
-                      label="Tags"
-                      name="tagIDs"
-                      items={tagOptions}
-                      labelKey="label"
-                      valueKey="value"
-                      required
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <TextAreaComponent
-                    label="Description"
-                    name="description"
-                    placeholder="Enter ticket description"
+                {/* Row 1: Title & Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <TextFieldComponent
+                    label="Title"
+                    name="title"
                     register={register}
                     errors={errors}
                     required
+                    placeholder="Enter ticket title"
+                    height="50px"
                   />
+                  <SelectSearch
+                    label="Status"
+                    name="statusID"
+                    options={statusOptions}
+                    required
+                    errors={errors}
+                    placeholder="Select Status"
+                    height="50px"
+                  />
+                </div>
 
-                  {/* File Upload */}
-                  {/* <MydropZone
+                {/* Row 2: Priority & Assigned To */}
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <SelectSearch
+                    label="Priority"
+                    name="priorityID"
+                    options={priorityOptions}
+                    required
+                    errors={errors}
+                    placeholder="Select Priority"
+                    height="50px"
+                  />
+                  <SelectSearch
+                    label="Assigned To"
+                    name="assignedTo"
+                    options={assignedToOptions}
+                    required
+                    errors={errors}
+                    placeholder="Select User"
+                    height="50px"
+                  />
+                </div>
+
+                {/* Row 3: Role & Tags */}
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <SelectSearch
+                    label="Role"
+                    name="roleID"
+                    options={roleOptions}
+                    required
+                    errors={errors}
+                    placeholder="Select Role"
+                    height="50px"
+                  />
+                  <MultiSelectChip
+                    label="Tags"
+                    name="tagIDs"
+                    items={tagOptions}
+                    labelKey="label"
+                    valueKey="value"
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <TextAreaComponent
+                  label="Description"
+                  name="description"
+                  placeholder="Enter ticket description"
+                  register={register}
+                  errors={errors}
+                  required
+                />
+
+                {/* File Upload */}
+                {/* <MydropZone
                     onFilesChange={(files: File[]) => setValue("files", files)}
                     className="p-16 mt-4 border"
                   /> */}
 
-                  <MydropZone
-  onFilesChange={(files) => setValue("files", files, { shouldValidate: true })}
-  className="p-16 mt-4 border"
-/>
-
-                </div>
-              </section>
-
-              {/* Submit */}
-              <div className="p-6">
-                <button
-                  type="submit"
-                  className="bg-gray-700 text-white px-6 py-2.5 rounded hover:bg-gray-800 transition-colors font-medium text-sm"
-                >
-                  {defaultValues ? "Update Ticket" : "Create Ticket"}
-                </button>
+                <MydropZone
+                  acceptedTypes={["image/*", "application/pdf"]}
+                  onFilesChange={(files) => setValue("files", files)}
+                  className="p-16 mt-4 border"
+                />
               </div>
+            </section>
 
+            {/* Submit */}
+            <div className="p-6">
+              <button
+                type="submit"
+                className="bg-gray-700 text-white px-6 py-2.5 rounded hover:bg-gray-800 transition-colors font-medium text-sm"
+              >
+                {defaultValues ? "Update Ticket" : "Create Ticket"}
+              </button>
             </div>
-          </form>
-        </FormProvider>
-      </div>
+
+          </div>
+        </form>
+      </FormProvider>
+    </div>
   );
 };
 

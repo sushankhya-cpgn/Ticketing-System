@@ -1,20 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../src/api/axiosClient";
 import AddStatusorm from "../../components/Forms/StatusForm"
-import Cookies from "js-cookie";
+import { TicketStatusApi } from "../../src/api/ticketstatusApi";
 
 export default function AddStatus(){
     const navigate = useNavigate();
-    const access_token = Cookies.get("accessToken");
 
     const handleCreateStatus = async(data:any)=>{
         try{
-            const res = await api.post("/TicketStatus/Create",data,{
-                headers:{
-                    Authorization:`Bearer ${access_token}`
-                }
-            });
+            const res = await TicketStatusApi.createStatus(data);
             console.log(res);
             toast.success("Status Created Successfully");
             navigate("/ticket/status");
