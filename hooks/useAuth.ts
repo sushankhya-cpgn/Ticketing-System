@@ -163,12 +163,12 @@ import Cookies from "js-cookie";
 import type { RootState } from "../app/store";
 
 export default function useAuth() {
-  const { accessToken, loading } = useSelector((state: RootState) => state.auth);
+  const {  loading } = useSelector((state: RootState) => state.auth);
 
   const cookieToken = Cookies.get("accessToken");
 
   // authenticated if token exists in redux OR cookies
-  const isAuthenticated = !!accessToken || !!cookieToken;
+  const isAuthenticated =  !!cookieToken;
 
   return {
     isAuthenticated,

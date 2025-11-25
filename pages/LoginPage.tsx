@@ -22,7 +22,7 @@ export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const {  error } = useSelector(
+  const { error } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -65,22 +65,22 @@ export default function LoginPage() {
 
   const { isAuthenticated, loading } = useAuth();
 
-useEffect(() => {
-  if (isAuthenticated && !loading) {
-    navigate("/", { replace: true });
-  }
-}, [isAuthenticated, loading, navigate]);
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
 
-if(loading || isAuthenticated){
-  return(
-     <div className="flex items-center justify-center h-[70vh]">
-            <CircularProgress />
-          </div>
-  );
-}
+  if (loading || isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-[70vh]">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
-       <>
+    <>
       <div className="flex justify-end p-4">
         <ThemeToggle />
       </div>

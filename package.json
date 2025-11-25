@@ -15,6 +15,7 @@
     "@fontsource/roboto": "^5.2.6",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.1",
+    "@microsoft/signalr": "^10.0.0",
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.3.1",
     "@mui/x-data-grid": "^8.10.0",
