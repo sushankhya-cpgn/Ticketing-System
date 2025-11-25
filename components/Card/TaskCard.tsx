@@ -10,7 +10,7 @@ export default function TaskCard({ task }:any) {
       }}
     >
       <h2>{task.content}</h2>
-      <p>Tags: {task.tags.map((tag:string[])=><span className=" mr-2">{tag}</span>)}</p>
+      <p>Tags: {task.tags.map((tag:string[],index:number)=><span className=" mr-2" key={index}>{tag}</span>)}</p>
       <p>Description: {task.description}</p>
       <p>Priority: {task.priority}</p>
       <p>Assigned To: {task.assignedTo}</p>
