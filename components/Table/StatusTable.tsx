@@ -7,10 +7,10 @@ import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
-import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
+import { TicketStatusApi } from "../../src/api/ticketstatusApi";
 
 interface StatusRecord {
   statusID: number;
@@ -35,12 +35,14 @@ const StatusTable: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!deleteStatus) return;
 
-    await api.delete(`/TicketStatus/Delete`, {
-      headers: { Authorization: `Bearer ${access_token}` },
-      params: { id: deleteStatus.statusID },
-    });
+    // await api.delete(`/TicketStatus/Delete`, {
+    //   headers: { Authorization: `Bearer ${access_token}` },
+    //   params: { id: deleteStatus.statusID },
+    // });
+    const res = TicketStatusApi.deleteStatus(deleteStatus?.statusID)
 
     setDeleteStatus(null);
+    console.log(res);
     window.location.reload();
   };
 

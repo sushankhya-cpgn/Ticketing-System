@@ -10,10 +10,10 @@ import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
-import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
+import { TagApi } from "../../src/api/tagApi";
 // import { TagApi } from "../../src/api/tagApi";
 
 interface TagRecord {
@@ -88,12 +88,13 @@ const TagTable: React.FC = () => {
 
     const handleConfirmDelete = async() =>{
             if(!deleteTag) return;
-            await api.delete('/Tags/DeleteTags',{
-                headers:{
-                    Authorization:`Bearer ${access_token}`
-                },
-                params:{id:deleteTag?.tagID}
-            });
+            // await api.delete(`/Tags`,{
+            //     headers:{
+            //         Authorization:`Bearer ${access_token}`
+            //     },
+            //     params:{id:deleteTag?.tagID}
+            // });
+            await TagApi.deleteTag(deleteTag?.tagID)
             // await TagApi.deleteTag(deleteTag?.tagID)
             setDeleteTag(null);
             window.location.reload();

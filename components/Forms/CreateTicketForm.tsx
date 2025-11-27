@@ -7,6 +7,7 @@ import SelectSearch from "../Fields/SelectSearch";
 import MydropZone from "../File Upload/fileupload";
 import api from "../../src/api/axiosClient";
 import FormHeader from "./Header";
+import Modal from "../Modal/Modal";
 
 interface ApiResponse<T> {
   isSucceed: boolean;
@@ -68,6 +69,33 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
   const [assignedToOptions, setAssignedToOptions] = useState<{ label: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [existingAttachments,setExistingAttachments] = useState(defaultValues?.attachments || []);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState<any>(null);
+
+
+
+
+const handleConfirmDelete = async () => {
+  if (!selectedAttachment) return;
+
+  try {
+    await api.delete(`/Ticket/DeleteAttachment/${selectedAttachment.attachmentID}`);
+
+    setExistingAttachments((prev:any) =>
+      prev.filter((att:any) => att.attachmentID !== selectedAttachment.attachmentID)
+    );
+
+    setDeleteModalOpen(false);
+    setSelectedAttachment(null);
+
+  } catch (error: any) {
+    console.error("Failed to delete attachment:", error);
+    alert(error?.response?.data?.message || "Failed to delete file");
+  }
+};
+
+
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -105,6 +133,36 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+      <Modal
+  isOpen={deleteModalOpen}
+  onClose={() => setDeleteModalOpen(false)}
+  title="Delete Attachment?"
+  size="sm"
+>
+  <div className="text-center">
+    <p className="mb-4 text-gray-700">
+      Are you sure you want to delete 
+      <span className="font-semibold"> {selectedAttachment?.url?.split('/').pop()}?</span>
+    </p>
+
+    <div className="flex justify-center gap-4 mt-4">
+      <button
+        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        onClick={() => setDeleteModalOpen(false)}
+      >
+        Cancel
+      </button>
+
+      <button
+        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        onClick={handleConfirmDelete}
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</Modal>
+
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6" encType="multipart/form-data">
           <div className="rounded-lg shadow-sm">
@@ -189,12 +247,6 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
                   required
                 />
 
-                {/* File Upload */}
-                {/* <MydropZone
-                    onFilesChange={(files: File[]) => setValue("files", files)}
-                    className="p-16 mt-4 border"
-                  /> */}
-
                 <MydropZone
                   acceptedTypes={["image/*", "application/pdf"]}
                   onFilesChange={(files) => setValue("files", files)}
@@ -203,14 +255,19 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
               </div>
 
 {defaultValues?.attachments && defaultValues.attachments.length > 0 && (
+  <div className="p-4">
+      {existingAttachments.length > 0 && (
   <div className="mt-6 p-4">
     <h3 className="text-sm font-medium text-gray-700 mb-3">
-      Previously uploaded documents ({defaultValues.attachments.length})
+      Previously uploaded documents ({existingAttachments.length})
     </h3>
+
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {defaultValues.attachments.map((attachment: any) => {
-        const isImage = attachment.url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-        const fileName = attachment.url.split('/').pop()?.split('_').slice(1).join('_') || 'file';
+      {existingAttachments.map((attachment: any) => {
+        const isImage = /\.(jpeg|jpg|gif|png|webp)$/i.test(attachment.url);
+        const fileName =
+          attachment.url.split("/").pop()?.split("_").slice(1).join("_") ||
+          "file";
 
         return (
           <div
@@ -225,8 +282,18 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
               />
             ) : (
               <div className="flex items-center justify-center h-32 bg-gray-200">
-                <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-12 h-12 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
             )}
@@ -235,7 +302,9 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
               {fileName}
             </div>
 
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+            {/* Hover actions */}
+            <div className="absolute gap-1 inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+              
               <a
                 href={attachment.url}
                 target="_blank"
@@ -244,12 +313,34 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
               >
                 View
               </a>
+
+              {/* <button
+                className="bg-white text-red-700 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
+                onClick={() => handleDeleteAttachment(attachment.attachmentID)}
+              >
+                Delete
+              </button> */}
+              <button
+  className="bg-white text-red-700 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedAttachment(attachment);
+    setDeleteModalOpen(true);
+  }}
+>
+  Delete
+</button>
+
             </div>
           </div>
         );
       })}
     </div>
   </div>
+)}
+
+    </div>
 )}
             </section>
 

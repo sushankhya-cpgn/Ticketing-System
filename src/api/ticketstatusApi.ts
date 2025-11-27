@@ -17,8 +17,11 @@ export const TicketStatusApi = {
       params: { id },
 }),
 
-  deleteStatus: (id: string) =>
-    api.delete("/TicketStatus/Delete", {
-      params: { id },
+  deleteStatus: (id: number|undefined) =>
+  {
+    const res = api.delete(`/TicketStatus/${id}`, {
+      // params: { id },
     })
+    return res;
+  }
 };

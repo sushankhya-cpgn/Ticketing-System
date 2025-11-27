@@ -16,7 +16,7 @@ export const TagApi = {
         api.get("/Tags/GetAll"),
 
     deleteTag: (id: number) =>
-        api.delete(`/Tags/DeleteTags`, {
-            params: { id }
+        api.delete(`/Tags/${id}`, {
+            // params: { id }
         })
 };
