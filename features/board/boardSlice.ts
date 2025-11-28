@@ -55,6 +55,7 @@
 
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import api from "../../src/api/axiosClient";
+import { logoutUser } from "../user/authslice"; // adjust path
 
 interface TaskCardTypes {
   id: string;
@@ -108,6 +109,8 @@ const boardSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchBoards.fulfilled, (state, action) => {
       state.value = action.payload;
+    })  .addCase(logoutUser.fulfilled, (state) => {
+      state.value = [];   // CLEAR BOARD DATA
     });
   },
 });

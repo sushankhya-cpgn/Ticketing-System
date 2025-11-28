@@ -11,7 +11,8 @@ import { HubConnectionState } from "@microsoft/signalr";
 import Modal from "../../components/Modal/Modal";
 import TextFieldComponent from "../../components/Fields/TextFieldComponent";
 import { TicketApi } from "../../src/api/ticketApi";
-
+import ButtonComponent from "../../components/Buttons/button";
+import BlankButton from "../../components/Buttons/BlankButton"
 
 interface Reply {
   commentID: number;
@@ -30,20 +31,17 @@ interface Comment {
   replies: Reply[];
 }
 
-
 interface TaskCardTypes {
   id: string;
   content: string;
-  title?:string;
+  title?: string;
   description?: string;
   priority?: string;
   assignedTo?: string;
   createdBy?: string;
   tags?: string[];
-  comments?:Comment[];
+  comments?: Comment[];
 }
-
-
 
 interface BoardColumn {
   id: string;     // statusId
@@ -54,46 +52,92 @@ interface BoardColumn {
 export default function KanbanBoard() {
   const boards = useSelector((s: RootState) => s.board.value);
   const dispatch = useDispatch<AppDispatch>();
-  const[isModalOpen, setIsModalOpen] = useState(false);
-  const[selectedCard,setSelectedCard] = useState<TaskCardTypes| null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
 
-const handleCardClick = async (card: any) => {
-  try {
-    const res = await TicketApi.getTicketById(card.id)
-    console.log(res)
-    setSelectedCard(res.data.data);  // contains full ticket
-    setIsModalOpen(true);
+  // ✨ Comment states
+  const [commentText, setCommentText] = useState("");
+  const [replyText, setReplyText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
-  } catch (err) {
-    console.error("Failed to load ticket details", err);
+  // -------------------------
+  // LOAD TICKET DETAILS
+  // -------------------------
+  const handleCardClick = async (card: any) => {
+    try {
+      const res = await TicketApi.getTicketById(card.id);
+      setSelectedCard(res.data.data);
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error("Failed to load ticket details", err);
+    }
+  };
+
+  // -------------------------
+  // ADD NEW COMMENT
+  // -------------------------
+  const addComment = async () => {
+    if (!selectedCard) return;
+    if (!commentText.trim()) return;
+
+    await TicketApi.addComment({
+      ticketId: selectedCard.ticketID ?? selectedCard.id,
+      commentText,
+    });
+
+    const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    setSelectedCard(updated.data.data);
+
+    setCommentText("");
+  };
+
+  const cancelComment = () => {
+    setCommentText("")
   }
-};
 
+
+
+  // -------------------------
+  // ADD REPLY
+  // -------------------------
+  const addReply = async (parentID: number) => {
+    if (!replyText.trim()) return;
+
+    await TicketApi.addComment({
+      ticketId: selectedCard.ticketID ?? selectedCard.id,
+      parentCommentID: parentID,
+      commentText: replyText,
+    });
+
+    const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    setSelectedCard(updated.data.data);
+
+    setReplyText("");
+    setReplyingTo(null);
+  };
+
+  // -------------------------
+  // SIGNALR + FETCH BOARD
+  // -------------------------
   useEffect(() => {
     dispatch(fetchBoards());
     startConnection();
 
-    // Listen for updates from SignalR
-    connection.on("TicketMoved", ({ TicketId, NewStatusId }) => {
-  // Re-fetch boards from API
-  dispatch(fetchBoards());
-});
+    connection.on("TicketMoved", () => {
+      dispatch(fetchBoards());
+    });
 
-    // return () => {
-    //   if (connection.state === HubConnectionState.Connected) {
-    //     connection.off("ReceiveCardUpdate");
-    //     connection.stop();
-    //   }
-    // };
     return () => {
-    connection.off("TicketMoved"); 
-    if (connection.state === HubConnectionState.Connected) {
-      connection.stop();
-    }
-  };
+      connection.off("TicketMoved");
+      if (connection.state === HubConnectionState.Connected) {
+        connection.stop();
+      }
+    };
   }, [dispatch]);
 
-  // reorder function
+  // -------------------------
+  // DND Functions
+  // -------------------------
   const reorder = (list: TaskCardTypes[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -101,7 +145,6 @@ const handleCardClick = async (card: any) => {
     return result;
   };
 
-  // move between columns
   const move = (sourceCol: BoardColumn, destCol: BoardColumn, sourceIndex: number, destIndex: number) => {
     const sourceCards = Array.from(sourceCol.cards);
     const destCards = Array.from(destCol.cards);
@@ -114,37 +157,22 @@ const handleCardClick = async (card: any) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
 
-    // same column movement
     if (source.droppableId === destination.droppableId) {
       const colIndex = boards.findIndex((c) => c.id === source.droppableId);
       const newCards = reorder(boards[colIndex].cards, source.index, destination.index);
-
       const newBoards = boards.map((col, index) =>
         index === colIndex ? { ...col, cards: newCards } : col
       );
-
       dispatch(setBoards(newBoards));
       return;
     }
 
-    // Different column (API + real-time)
     const ticketId = draggableId;
     const newStatusId = destination.droppableId;
 
     try {
-      // 1️⃣ Move using API
-      await api.put(
-  `/Kanban/MoveTicket`,
-  {},
-  {
-    params: {
-      ticketId: ticketId,
-      newStatusId: newStatusId,
-    },
-  }
-);
+      await api.put(`/Kanban/MoveTicket`, {}, { params: { ticketId, newStatusId } });
 
-      // 2️⃣ Local optimistic update
       const sourceColIndex = boards.findIndex((c) => c.id === source.droppableId);
       const destColIndex = boards.findIndex((c) => c.id === destination.droppableId);
 
@@ -162,56 +190,134 @@ const handleCardClick = async (card: any) => {
       });
 
       dispatch(setBoards(newBoards));
-
-
     } catch (error) {
       console.error("MoveTicket failed:", error);
     }
   };
 
-
-
   return (
     <div style={{ padding: 20 }}>
       <DragDropContext onDragEnd={onDragEnd}>
+        {/* ------------------------- */}
+        {/* TICKET DETAILS MODAL */}
+        {/* ------------------------- */}
         <Modal
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  title="Ticket Details"
-  size="lg"
->
-  {selectedCard && (
-    <div className="flex flex-col gap-4 w-full">
-      <div>
-        <p className="font-semibold text-lg"> Title: {selectedCard.title}</p>
-      </div>
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Ticket Details"
+          size="xl"
+        >
+          {selectedCard && (
+            <div className="flex  gap-4 w-full">
+              {/* LEFT SIDE — DETAILS + COMMENTS */}
+              <div className="p-4  w-3/4 h-[700px] overflow-y-auto border border-gray-300 rounded">
+                <div>
+                  <p className="font-semibold text-lg"> Title: {selectedCard.title}</p>
+                </div>
 
-      {selectedCard.description && (
-        <p><strong>Description:</strong> {selectedCard.description}</p>
-      )}
+                {selectedCard.description && (
+                  <p><strong>Description:</strong> {selectedCard.description}</p>
+                )}
 
-      {selectedCard.priority && (
-        <p><strong>Priority:</strong> {selectedCard.priority}</p>
-      )}
+                {/* COMMENTS SECTION */}
+                <div className="mt-4">
+                  <h3 className="font-semibold text-lg mb-2">Comments</h3>
 
-      {selectedCard.assignedTo && (
-        <p><strong>Assigned To:</strong> {selectedCard.assignedTo}</p>
-      )}
-  <div className="flex gap-2">
-    <p><strong>Tags:</strong></p>
-      {selectedCard.tags && selectedCard.tags.length > 0 ? (
-  selectedCard.tags.map(tag => <span>{tag}</span>)
-) : (
-  <p>No tags</p>
-)}
-</div>
-{}
-<TextFieldComponent label="Comments"></TextFieldComponent>
-    </div>
-  )}
+                  {/* ADD NEW COMMENT */}
+                  <div className="flex gap-2 mb-4">
+                    <TextFieldComponent
+                      label="Add a comment"
+                      value={commentText}
+                      onChange={(e: any) => setCommentText(e.target.value)}
+                    />
+                  </div>
 
-</Modal>
+                  {commentText && (
+                    <div className="flex gap-2">
+                      <ButtonComponent
+                        onClick={addComment}
+                        label="Post"
+                        sx={{ backgroundColor: "green", ":hover": { backgroundColor: "darkgreen" } }}
+                        height="35px"
+                      />
+                      <BlankButton onClick={cancelComment} label="Cancel" sx={{ color: "red" }} />
+                    </div>
+                  )}
 
+                  {/* COMMENTS LIST */}
+                  <div className="flex flex-col gap-3 mt-2">
+                    {selectedCard.comments?.map((c: any) => (
+                      <div key={c.commentID} className="p-3 rounded">
+                        <p className="font-medium">User {c.commentedBy}</p>
+                        <p>{c.commentText}</p>
+
+                        <button
+                          className="text-blue-600 text-sm mt-1"
+                          onClick={() => setReplyingTo(c.commentID)}
+                        >
+                          Reply
+                        </button>
+
+                        {replyingTo === c.commentID && (
+                          <div className="mt-2 flex-col">
+
+                            <TextFieldComponent label="Write a reply..." value={replyText} onChange={(e: any) => setReplyText(e.target.value)} ></TextFieldComponent>
+                            {replyText &&
+                              <div className=" flex mt-4 gap-2">
+                                <ButtonComponent onClick={() => addReply(c.commentID)} label="Send" sx={{ backgroundColor: "green", ":hover": { backgroundColor: "darkgreen" } }}
+                                  height="35px"></ButtonComponent>
+                                <BlankButton label="Cancel" onClick={() => setReplyingTo(null)} sx={{ color: "red" }}></BlankButton>
+                              </div>
+                            }
+                          </div>
+
+                        )}
+
+                        {/* Replies */}
+                        <div className="ml-6 mt-2 flex flex-col gap-2">
+                          {c.replies?.map((r: any) => (
+                            <div key={r.commentID} className="p-2 rounded">
+                              <p className="font-medium">User {r.commentedBy}</p>
+                              <p>{r.commentText}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT SIDE — ALSO SCROLLABLE */}
+              <div className="w-1/2 h-[500px] overflow-y-auto p-4 border border-gray-300 rounded">
+                {selectedCard.priority && (
+                  <p><strong>Priority:</strong> {selectedCard.priority}</p>
+                )}
+
+                {selectedCard.assignedTo && (
+                  <p><strong>Assigned To:</strong> {selectedCard.assignedTo}</p>
+                )}
+
+                <div className="flex gap-2 mt-2">
+                  <p><strong>Tags:</strong></p>
+                  {selectedCard.tags?.length ? (
+                    selectedCard.tags.map((tag: any, i: any) => (
+                      <span key={i}>{tag}</span>
+                    ))
+                  ) : (
+                    <p>No tags</p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          )}
+        </Modal>
+
+
+        {/* ------------------------- */}
+        {/* KANBAN COLUMNS */}
+        {/* ------------------------- */}
         <div style={{ display: "flex", gap: 12 }}>
           {boards.map((column: BoardColumn) => (
             <div key={column.id}>
@@ -235,7 +341,7 @@ const handleCardClick = async (card: any) => {
                               ref={prov.innerRef}
                               {...prov.draggableProps}
                               {...prov.dragHandleProps}
-                              onClick={()=>handleCardClick(card)}
+                              onClick={() => handleCardClick(card)}
                               style={{ marginBottom: 8, ...prov.draggableProps.style }}
                             >
                               <TaskCard task={card} />
