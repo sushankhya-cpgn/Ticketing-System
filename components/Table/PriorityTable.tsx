@@ -7,10 +7,10 @@ import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
-import api from "../../src/api/axiosClient";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
+import { TicketPriorityApi } from "../../src/api/ticketpriorityApi";
 
 interface PriorityRecord {
   priorityID: string;
@@ -39,10 +39,11 @@ const PriorityTable: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!deletePriority) return;
 
-    await api.delete(`/TicketPriority/DeleteTicketPriority`, {
-      headers: { Authorization: `Bearer ${access_token}` },
-      params: { id: deletePriority.priorityID }, // ✅ Correct param
-    });
+    // await api.delete(`/TicketPriority/DeleteTicketPriority`, {
+    //   headers: { Authorization: `Bearer ${access_token}` },
+    //   params: { id: deletePriority.priorityID }, // ✅ Correct param
+    // });
+    TicketPriorityApi.deleteTicketPriority(deletePriority.priorityID)
 
     setDeletePriority(null);
     window.location.reload();

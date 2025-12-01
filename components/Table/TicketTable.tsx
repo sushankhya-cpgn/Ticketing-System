@@ -77,7 +77,28 @@ const TicketTable: React.FC = () => {
         { label: "Title", field: "title", flex: 4 },
         { label: "StatusName", field: "statusName", flex: 2 },
         { label: "PriorityName", field: "priorityName", flex: 3 },
-        { label: "TagName", field: "tagNames", flex: 2 },
+        // { label: "TagName", field: "tagNames", flex: 2 },
+            {
+        label: "TagName",
+        field: "tagNames",
+        flex: 3,
+        render: (row) => (
+            <div className="flex flex-wrap gap-1">
+                {row.tagNames?.length > 0 ? (
+                    row.tagNames.map((tag, i) => (
+                        <span
+                            key={i}
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+                        >
+                            {tag}
+                        </span>
+                    ))
+                ) : (
+                    <span className="text-gray-400 text-xs">No Tags</span>
+                )}
+            </div>
+        ),
+    },
         { label: "CreatedBy", field: "createdByName", flex: 2 },
         { label: "AssignedTo", field: "assignedToName", flex: 2 },
         { label: "CreatedAt", field: "createdAt", flex: 2 },

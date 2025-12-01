@@ -155,7 +155,7 @@ const UserTable: React.FC = () => {
       <Modal
         isOpen={Boolean(assignTask)}
         onClose={() => setAssignTask(null)}
-        title={`Assign Tasks to: ${assignTask?.roleName}`}
+        title={`Assign Tasks to: ${assignTask?.userName}`}
         size="full"
         closeOnOverlayClick={false}
       >

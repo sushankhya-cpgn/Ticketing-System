@@ -19,4 +19,11 @@ export const TicketApi = {
         api.delete(`/Ticket/Delete/${id}`)
     ,
 
+    addComment:(payload:any)=>
+        api.post(`Ticket/AddComment`,payload),
+
+    deleteComment:(id:number|undefined)=>
+        api.delete(`Ticket/DeleteComment/${id}`)
+    
+
 }

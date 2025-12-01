@@ -55,7 +55,7 @@ const Modal = ({
     sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",
-    xl: "max-w-4xl",
+    xl: "max-w-7xl",
     full: "max-w-7xl mx-4",
   };
 
@@ -126,9 +126,17 @@ const Modal = ({
         )}
 
         {/* Content */}
-        <div className="p-6 flex justify-center" style={{ color: "var(--text-foreground)" }}>
-          {children}
-        </div>
+     {/* Content - FIXED VERSION */}
+<div className="flex flex-col h-full">
+  <div 
+    className="flex-1 overflow-y-auto px-6 pb-6 pt-2" 
+    style={{ maxHeight: 'calc(100vh - 200px)' }} // Adjust based on header/footer
+  >
+    <div className="max-w-4xl mx-auto">
+      {children}
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );
