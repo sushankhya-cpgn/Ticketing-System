@@ -20,7 +20,10 @@ export const TicketApi = {
     ,
 
     addComment:(payload:any)=>
-        api.post(`Ticket/AddComment`,payload)
+        api.post(`Ticket/AddComment`,payload),
+
+    deleteComment:(id:number|undefined)=>
+        api.delete(`Ticket/DeleteComment/${id}`)
     
 
 }

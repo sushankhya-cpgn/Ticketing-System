@@ -13,6 +13,8 @@ import TextFieldComponent from "../../components/Fields/TextFieldComponent";
 import { TicketApi } from "../../src/api/ticketApi";
 import ButtonComponent from "../../components/Buttons/button";
 import BlankButton from "../../components/Buttons/BlankButton"
+import { KanBanApi } from "../../src/api/kanbanApi";
+import AttachmentCard from "../../components/Card/AttachmentCard";
 
 interface Reply {
   commentID: number;
@@ -65,7 +67,8 @@ export default function KanbanBoard() {
   // -------------------------
   const handleCardClick = async (card: any) => {
     try {
-      const res = await TicketApi.getTicketById(card.id);
+      // const res = await TicketApi.getTicketById(card.id);
+      const res = await KanBanApi.getById(card.id);
       setSelectedCard(res.data.data);
       setIsModalOpen(true);
     } catch (err) {
@@ -85,7 +88,8 @@ export default function KanbanBoard() {
       commentText,
     });
 
-    const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    // const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    const updated = await KanBanApi.getById(selectedCard.ticketID ?? selectedCard.id)
     setSelectedCard(updated.data.data);
 
     setCommentText("");
@@ -94,6 +98,11 @@ export default function KanbanBoard() {
   const cancelComment = () => {
     setCommentText("")
   }
+
+  
+  // -------------------------
+  //Delete Comment
+  // -------------------------
 
 
 
@@ -109,7 +118,8 @@ export default function KanbanBoard() {
       commentText: replyText,
     });
 
-    const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    // const updated = await TicketApi.getTicketById(selectedCard.ticketID ?? selectedCard.id);
+    const updated = await KanBanApi.getById(selectedCard.ticketID ?? selectedCard.id)
     setSelectedCard(updated.data.data);
 
     setReplyText("");
@@ -210,7 +220,7 @@ export default function KanbanBoard() {
           {selectedCard && (
             <div className="flex  gap-4 w-full">
               {/* LEFT SIDE — DETAILS + COMMENTS */}
-              <div className="p-4  w-3/4 h-[700px] overflow-y-auto border border-gray-300 rounded">
+              <div className="p-4  w-1/2 h-[700px] overflow-y-auto border border-gray-300 rounded">
                 <div>
                   <p className="font-semibold text-lg"> Title: {selectedCard.title}</p>
                 </div>
@@ -247,42 +257,88 @@ export default function KanbanBoard() {
                   {/* COMMENTS LIST */}
                   <div className="flex flex-col gap-3 mt-2">
                     {selectedCard.comments?.map((c: any) => (
-                      <div key={c.commentID} className="p-3 rounded">
-                        <p className="font-medium">User {c.commentedBy}</p>
-                        <p>{c.commentText}</p>
+                      // <div key={c.commentID} className="p-3 rounded">
+                      //   <p className="font-medium">User {c.commentedByName}</p>
+                      //   <p>{c.commentText}</p>
 
-                        <button
-                          className="text-blue-600 text-sm mt-1"
-                          onClick={() => setReplyingTo(c.commentID)}
-                        >
-                          Reply
-                        </button>
+                      //   <button
+                      //     className="text-blue-600 text-sm mt-1"
+                      //     onClick={() => setReplyingTo(c.commentID)}
+                      //   >
+                      //     Reply
+                      //   </button>
 
-                        {replyingTo === c.commentID && (
-                          <div className="mt-2 flex-col">
+                      //   {replyingTo === c.commentID && (
+                      //     <div className="mt-2 flex-col">
 
-                            <TextFieldComponent label="Write a reply..." value={replyText} onChange={(e: any) => setReplyText(e.target.value)} ></TextFieldComponent>
-                            {replyText &&
-                              <div className=" flex mt-4 gap-2">
-                                <ButtonComponent onClick={() => addReply(c.commentID)} label="Send" sx={{ backgroundColor: "green", ":hover": { backgroundColor: "darkgreen" } }}
-                                  height="35px"></ButtonComponent>
-                                <BlankButton label="Cancel" onClick={() => setReplyingTo(null)} sx={{ color: "red" }}></BlankButton>
-                              </div>
-                            }
-                          </div>
+                      //       <TextFieldComponent label="Write a reply..." value={replyText} onChange={(e: any) => setReplyText(e.target.value)} ></TextFieldComponent>
+                      //       {replyText &&
+                      //         <div className=" flex mt-4 gap-2">
+                      //           <ButtonComponent onClick={() => addReply(c.commentID)} label="Send" sx={{ backgroundColor: "green", ":hover": { backgroundColor: "darkgreen" } }}
+                      //             height="35px"></ButtonComponent>
+                      //           <BlankButton label="Cancel" onClick={() => setReplyingTo(null)} sx={{ color: "red" }}></BlankButton>
+                      //         </div>
+                      //       }
+                      //     </div>
 
-                        )}
+                      //   )}
 
-                        {/* Replies */}
-                        <div className="ml-6 mt-2 flex flex-col gap-2">
-                          {c.replies?.map((r: any) => (
-                            <div key={r.commentID} className="p-2 rounded">
-                              <p className="font-medium">User {r.commentedBy}</p>
-                              <p>{r.commentText}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      //   {/* Replies */}
+                      //   <div className="ml-6 mt-2 flex flex-col gap-2">
+                      //     {c.replies?.map((r: any) => (
+                      //       <div key={r.commentID} className="p-2 rounded">
+                      //         <p className="font-medium">User {r.commentedByName}</p>
+                      //         <p>{r.commentText}</p>
+                      //       </div>
+                      //     ))}
+                      //   </div>
+                      // </div>
+                      <div className="border-l-2 border-gray-300 pl-4 ml-2" key={c.commentID}>
+  <p className="font-medium">User {c.commentedByName}</p>
+  <p>{c.commentText}</p>
+
+  <button
+    className="text-blue-600 text-sm mt-1"
+    onClick={() => setReplyingTo(c.commentID)}
+  >
+    Reply
+  </button>
+
+  {/* Reply Input */}
+  {replyingTo === c.commentID && (
+    <div className="mt-2 ml-4">
+      <TextFieldComponent
+        label="Write a reply..."
+        value={replyText}
+        onChange={(e: any) => setReplyText(e.target.value)}
+      />
+
+      {replyText && (
+        <div className="flex gap-2 mt-2">
+          <ButtonComponent
+            onClick={() => addReply(c.commentID)}
+            label="Send"
+            height="35px"
+          />
+          <BlankButton label="Cancel" onClick={() => setReplyingTo(null)} />
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* Replies */}
+  {c.replies?.length > 0 && (
+    <div className="ml-6 mt-3 flex flex-col gap-2 border-l-2 border-gray-200 pl-4">
+      {c.replies.map((r: any) => (
+        <div key={r.commentID}>
+          <p className="font-medium">User {r.commentedByName}</p>
+          <p>{r.commentText}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
                     ))}
                   </div>
                 </div>
@@ -290,24 +346,51 @@ export default function KanbanBoard() {
 
               {/* RIGHT SIDE — ALSO SCROLLABLE */}
               <div className="w-1/2 h-[500px] overflow-y-auto p-4 border border-gray-300 rounded">
-                {selectedCard.priority && (
-                  <p><strong>Priority:</strong> {selectedCard.priority}</p>
+              {selectedCard.createdByName && (
+                <p><strong>Assignee:</strong> {selectedCard.createdByName}</p>
+              )}
+              
+                {selectedCard.assignedToName && (
+                  <p><strong>Assigned To User:</strong> {selectedCard.assignedToName}</p>
                 )}
 
-                {selectedCard.assignedTo && (
-                  <p><strong>Assigned To:</strong> {selectedCard.assignedTo}</p>
+                {selectedCard.roleName && (
+                  <p><strong>Role:</strong> {selectedCard.roleName}</p>
                 )}
 
-                <div className="flex gap-2 mt-2">
+
+                {selectedCard.priorityName && (
+                  <p><strong>Priority:</strong> {selectedCard.priorityName}</p>
+                )}
+                <div className="flex gap-2">
                   <p><strong>Tags:</strong></p>
-                  {selectedCard.tags?.length ? (
-                    selectedCard.tags.map((tag: any, i: any) => (
+                  {selectedCard.tagNames?.length ? (
+                    selectedCard.tagNames.map((tag: any, i: any) => (
                       <span key={i}>{tag}</span>
                     ))
                   ) : (
                     <p>No tags</p>
                   )}
                 </div>
+                {selectedCard.createdAt && (
+                  <p><strong>Created At:</strong> {selectedCard.createdAt}</p>
+                )}
+                {selectedCard.updatedAt && (
+                  <p><strong>Updated At:</strong> {selectedCard.updatedAt}</p>
+                )}
+                {selectedCard.attachments && (
+                
+                <div className=" mt-2 grid grid-cols-2">
+                  {/* <p className=" mb-2"><strong>Uploaded Attachments</strong></p> */}
+                  {selectedCard.attachments.map((att:any)=>
+                  <AttachmentCard key={att.id} attachment={{
+                    attachmentID:att.attachmentID,
+                    url:att.url
+                  }} />)}
+                  </div>
+
+
+                )} 
               </div>
 
             </div>
