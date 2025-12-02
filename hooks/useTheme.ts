@@ -3,7 +3,7 @@ import type { RootState, AppDispatch } from "../app/store";
 import { toggleTheme, setTheme, type Theme } from "../features/theme/themeslice";
 
 export const useTheme = () => {
-  const theme = useSelector((state: RootState) => state.themeReducer.theme);
+const theme = useSelector((state: RootState) => state.theme.theme);
   const dispatch = useDispatch<AppDispatch>();
 
   return {

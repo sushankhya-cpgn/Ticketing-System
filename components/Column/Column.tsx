@@ -3,7 +3,8 @@ export default function Column({ title, children }:any) {
     <div
       style={{
         width: 280,
-        background: "#f4f5f7",
+         background: "var(--background-secondary)",
+        color: "var(--text-foreground)",
         padding: 10,
         borderRadius: 8,
         minHeight: 100,
