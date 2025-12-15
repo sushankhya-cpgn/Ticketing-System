@@ -1,3 +1,228 @@
+// import React, { useState } from "react";
+// import { CircularProgress, Pagination, Button } from "@mui/material";
+// import VirtualizedTable, { type Column } from "./VirtualizedTable";
+// import { useNavigate } from "react-router-dom";
+// import { useDataTable } from "../../hooks/useDataTable";
+// import { Edit, FilePlus } from "lucide-react";
+// import TableFilterBar from "./TableFilterBar";
+// import Modal from "../Modal/Modal";
+// import AssignUserTask from "../Tasks/AssignUserTask"
+// import api from "../../src/api/axiosClient";
+// import ProtectedAction from "../Auth/ProtectedAction";
+// import Cookies from "js-cookie";
+
+// interface UserRecord {
+//   userID: number;
+//   displayName: string;
+//   userName: string;
+//   email: string;
+//   roleName: string;
+//   userStatusName: string;
+// }
+
+// interface Task {
+//   id: string;
+//   name: string;
+// }
+
+// const UserTable: React.FC = () => {
+//   const navigate = useNavigate();
+//   const access_token = Cookies.get("accessToken");
+//   const [assignTask, setAssignTask] = useState<UserRecord | null>(null);
+//   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+//   const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
+
+//   const {
+//     loading,
+//     paginatedRows,
+//     filteredRows,
+//     searchField,
+//     setSearchField,
+//     searchText,
+//     setSearchText,
+//     searchSelect,
+//     setSearchSelect,
+//     page,
+//     setPage,
+//     pageSize,
+//     setPageSize,
+//     selectOptions,
+//   } = useDataTable<UserRecord>({
+//     apiUrl: "/User/GetAllUserslist",
+//     token: access_token,
+//     searchableFields: ["displayName", "userName", "email", "roleName", "userStatusName"],
+//     defaultSearchField: "displayName",
+//   });
+
+//   const addUser = () => navigate("/customers/adduser");
+//   const handleEdit = (user: UserRecord) => navigate(`/customers/edituser/${user.userID}`);
+ 
+//   const handleAssignUserTask = async (user: UserRecord) => {
+//     setAssignTask(user); // Open modal
+
+//     // clear previous tasks
+//     setAvailableTasks([]);
+//     setAssignedTasks([]);
+
+//     try {
+//       const [assignedRes, availableRes] = await Promise.all([
+//         api.get(`/UserTask/assigned/${user.userID}`, {
+//           headers: {
+//             Authorization: `Bearer ${access_token}`,
+//           },
+//         }),
+//         api.get(`/UserTask/available/${user.userID}`, {
+//           headers: {
+//             Authorization: `Bearer ${access_token}`,
+//           },
+//         })
+//       ]);
+
+//       // Assigned tasks
+//       if (assignedRes.data.isSucceed) {
+//         setAssignedTasks(
+//           assignedRes.data.data.map((t: any) => ({
+//             id: t.taskID.toString(),
+//             name: t.taskName,
+//           }))
+//         );
+//       }
+
+//       // Available tasks
+//       if (availableRes.data.isSucceed) {
+//         setAvailableTasks(
+//           availableRes.data.data.map((t: any) => ({
+//             id: t.taskID.toString(),
+//             name: t.taskName,
+//           }))
+//         );
+//       }
+//     } catch (error: any) {
+//       console.error("Error fetching role tasks:", error);
+//     }
+//   };
+
+//   const columns: Column<UserRecord>[] = [
+//     { label: "ID", field: "userID", flex: 0.5 },
+//     { label: "Name", field: "displayName", flex: 2 },
+//     { label: "Username", field: "userName", flex: 2 },
+//     { label: "Email", field: "email", flex: 3 },
+//     { label: "Role", field: "roleName", flex: 2 },
+//     { label: "Status", field: "userStatusName", flex: 1 },
+//     {
+//       label: "Actions",
+//       field: "userID",
+//       flex: 2,
+//       render: (row) => (
+//         <div className="flex gap-2">
+//           <ProtectedAction
+//             permission="Edit User"
+//             title="Edit User"
+//             onClick={() => handleEdit(row)}
+//           >
+//             <Button size="small" variant="text" >
+//               <Edit size={18} />
+//             </Button>
+//           </ProtectedAction>
+
+//              <ProtectedAction
+//             permission="Assign UserTask"
+//             title="Assign Tasks"
+//             onClick={() => handleAssignUserTask(row)}
+//           >
+//             <Button size="small" variant="text">
+//               <FilePlus size={18} />
+//             </Button>
+//           </ProtectedAction>
+
+
+          
+        
+//         </div>
+//       ),
+//     },
+//   ];
+
+//   if (loading)
+//     return (
+//       <div className="flex items-center justify-center h-[70vh]">
+//         <CircularProgress />
+//       </div>
+//     );
+
+//   return (
+//     <div className="w-full">
+//       <Modal
+//         isOpen={Boolean(assignTask)}
+//         onClose={() => setAssignTask(null)}
+//         title={`Assign Tasks to: ${assignTask?.userName}`}
+//         size="full"
+//         closeOnOverlayClick={false}
+//       >
+//         <div className="w-full flex flex-col items-center">
+//           <div className="w-full max-w-4xl px-6">
+//             <AssignUserTask
+//               userId={assignTask?.userID ?? 0}
+//               accessToken={access_token ?? ""}
+//               availableTasks={availableTasks}
+//               assignedTasks={assignedTasks}
+//               setAvailableTasks={setAvailableTasks}
+//               setAssignedTasks={setAssignedTasks}
+//             />
+//           </div>
+
+//         </div>
+//       </Modal>
+  
+//       <TableFilterBar
+//         searchField={searchField}
+//         setSearchField={setSearchField}
+//         searchText={searchText}
+//         setSearchText={setSearchText}
+//         searchSelect={searchSelect}
+//         setSearchSelect={setSearchSelect}
+//         pageSize={pageSize}
+//         setPageSize={setPageSize}
+//         setPage={setPage}
+//         dropdownFields={["roleName", "userStatusName"]}
+//         fieldOptions={[
+//           { label: "Name", value: "displayName" },
+//           { label: "Username", value: "userName" },
+//           { label: "Email", value: "email" },
+//           { label: "Role", value: "roleName" },
+//           { label: "Status", value: "userStatusName" },
+//         ]}
+//         selectOptions={{
+//           roleName: selectOptions?.roleName || [],       // from API if dynamic
+//           userStatusName: [
+//             { label: "Active", value: "Active" },
+//             { label: "Inactive", value: "Inactive" },
+//           ],
+//         }}
+//         onAddClick={addUser}
+//         addButtonLabel="Add User"
+//         addButtonPermission="Create User"
+//       />
+
+//       <VirtualizedTable<UserRecord> data={paginatedRows} columns={columns} />
+
+//       <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
+//         <div>Showing {paginatedRows.length} of {filteredRows.length}</div>
+//         {pageSize !== "all" && (
+//           <Pagination
+//             count={Math.ceil(filteredRows.length / (pageSize as number))}
+//             page={page}
+//             onChange={(e, p) => setPage(p)}
+//             size="small" />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default UserTable;
+// src/pages/UserTable.tsx
+
 import React, { useState } from "react";
 import { CircularProgress, Pagination, Button } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
@@ -25,130 +250,85 @@ interface Task {
   name: string;
 }
 
-const UserTable: React.FC = () => {
+const UserTablePage: React.FC = () => {
   const navigate = useNavigate();
-  const access_token = Cookies.get("accessToken");
-  const [assignTask, setAssignTask] = useState<UserRecord | null>(null);
-  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
-  const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
+  const token = Cookies.get("accessToken") ?? "";
 
   const {
     loading,
-    paginatedRows,
-    filteredRows,
-    searchField,
-    setSearchField,
-    searchText,
-    setSearchText,
-    searchSelect,
-    setSearchSelect,
+    rows,
+    totalCount,
     page,
     setPage,
     pageSize,
     setPageSize,
-    selectOptions,
+    searchTerm,
+    setSearchTerm,
+    setOrderBy,
+    columnFilters,
+    setColumnFilters,
   } = useDataTable<UserRecord>({
     apiUrl: "/User/GetAllUserslist",
-    token: access_token,
-    searchableFields: ["displayName", "userName", "email", "roleName", "userStatusName"],
-    defaultSearchField: "displayName",
+    token,
+    defaultPageSize: 10,
   });
 
-  const addUser = () => navigate("/customers/adduser");
-  const handleEdit = (user: UserRecord) => navigate(`/customers/edituser/${user.userID}`);
- 
-  const handleAssignUserTask = async (user: UserRecord) => {
-    setAssignTask(user); // Open modal
+  const [assignTask, setAssignTask] = useState<UserRecord | null>(null);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
+   const access_token = Cookies.get("accessToken");
 
-    // clear previous tasks
+  // useEffect(() => {
+  //   // example: if you want to fetch role options for filters, do it here
+  // }, []);
+
+  const fetchTasksForUser = async (user: UserRecord) => {
+    setAssignTask(user);
     setAvailableTasks([]);
     setAssignedTasks([]);
 
     try {
       const [assignedRes, availableRes] = await Promise.all([
-        api.get(`/UserTask/assigned/${user.userID}`, {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }),
-        api.get(`/UserTask/available/${user.userID}`, {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        })
+        api.get(`/UserTask/assigned/${user.userID}`, { headers: { Authorization: `Bearer ${token}` } }),
+        api.get(`/UserTask/available/${user.userID}`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
-      // Assigned tasks
-      if (assignedRes.data.isSucceed) {
-        setAssignedTasks(
-          assignedRes.data.data.map((t: any) => ({
-            id: t.taskID.toString(),
-            name: t.taskName,
-          }))
-        );
+      if (assignedRes.data?.isSucceed) {
+        setAssignedTasks(assignedRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
       }
 
-      // Available tasks
-      if (availableRes.data.isSucceed) {
-        setAvailableTasks(
-          availableRes.data.data.map((t: any) => ({
-            id: t.taskID.toString(),
-            name: t.taskName,
-          }))
-        );
+      if (availableRes.data?.isSucceed) {
+        setAvailableTasks(availableRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
       }
-    } catch (error: any) {
-      console.error("Error fetching role tasks:", error);
+    } catch (err) {
+      console.error("fetchTasksForUser error:", err);
     }
   };
 
   const columns: Column<UserRecord>[] = [
-    { label: "ID", field: "userID", flex: 0.5 },
-    { label: "Name", field: "displayName", flex: 2 },
+    { label: "ID", field: "userID", flex: 1, sortable: true },
+    { label: "Name", field: "displayName", flex: 2, sortable: true },
     { label: "Username", field: "userName", flex: 2 },
     { label: "Email", field: "email", flex: 3 },
-    { label: "Role", field: "roleName", flex: 2 },
-    { label: "Status", field: "userStatusName", flex: 1 },
+    { label: "Role", field: "roleName", flex: 2, sortable: true },
+    { label: "Status", field: "userStatusName", flex: 1, sortable: true },
     {
       label: "Actions",
       field: "userID",
       flex: 2,
       render: (row) => (
         <div className="flex gap-2">
-          <ProtectedAction
-            permission="Edit User"
-            title="Edit User"
-            onClick={() => handleEdit(row)}
-          >
-            <Button size="small" variant="text" >
-              <Edit size={18} />
-            </Button>
+          <ProtectedAction permission="Edit User" title="Edit User" onClick={() => navigate(`/customers/edituser/${row.userID}`)}>
+            <Button size="small" variant="text"><Edit size={18} /></Button>
           </ProtectedAction>
 
-             <ProtectedAction
-            permission="Assign UserTask"
-            title="Assign Tasks"
-            onClick={() => handleAssignUserTask(row)}
-          >
-            <Button size="small" variant="text">
-              <FilePlus size={18} />
-            </Button>
+          <ProtectedAction permission="Assign UserTask" title="Assign Tasks" onClick={() => fetchTasksForUser(row)}>
+            <Button size="small" variant="text"><FilePlus size={18} /></Button>
           </ProtectedAction>
-
-
-          
-        
         </div>
       ),
     },
   ];
-
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-[70vh]">
-        <CircularProgress />
-      </div>
-    );
 
   return (
     <div className="w-full">
@@ -159,9 +339,8 @@ const UserTable: React.FC = () => {
         size="full"
         closeOnOverlayClick={false}
       >
-        <div className="w-full flex flex-col items-center">
-          <div className="w-full max-w-4xl px-6">
-            <AssignUserTask
+        <div className="w-full flex justify-center">
+              <AssignUserTask
               userId={assignTask?.userID ?? 0}
               accessToken={access_token ?? ""}
               availableTasks={availableTasks}
@@ -169,55 +348,64 @@ const UserTable: React.FC = () => {
               setAvailableTasks={setAvailableTasks}
               setAssignedTasks={setAssignedTasks}
             />
-          </div>
-
         </div>
       </Modal>
-  
+
       <TableFilterBar
-        searchField={searchField}
-        setSearchField={setSearchField}
-        searchText={searchText}
-        setSearchText={setSearchText}
-        searchSelect={searchSelect}
-        setSearchSelect={setSearchSelect}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        setPage={setPage}
+        searchText={searchTerm}
+        setSearchText={setSearchTerm}
         dropdownFields={["roleName", "userStatusName"]}
-        fieldOptions={[
-          { label: "Name", value: "displayName" },
-          { label: "Username", value: "userName" },
-          { label: "Email", value: "email" },
-          { label: "Role", value: "roleName" },
-          { label: "Status", value: "userStatusName" },
-        ]}
         selectOptions={{
-          roleName: selectOptions?.roleName || [],       // from API if dynamic
           userStatusName: [
             { label: "Active", value: "Active" },
             { label: "Inactive", value: "Inactive" },
           ],
         }}
-        onAddClick={addUser}
+        // onDropdownChange={(field:any, value:any) => {
+        //   setColumnFilters({ ...columnFilters, [field]: value });
+        // }}
+        onAddClick={() => navigate("/customers/adduser")}
         addButtonLabel="Add User"
         addButtonPermission="Create User"
+        pageSize={pageSize}
+        setPageSize={(s) => setPageSize(s)}
+        setPage={setPage}
       />
 
-      <VirtualizedTable<UserRecord> data={paginatedRows} columns={columns} />
+      {loading ? (
+        <div className="flex items-center justify-center h-[60vh]">
+          <CircularProgress />
+        </div>
+      ) : (
+        <>
+          <VirtualizedTable
+            data={rows}
+            columns={columns}
+            loading={loading}
+            onSort={(field, order) => {
+              // field is a keyof UserRecord
+              // transform to API OrderBy string like "displayName asc"
+              setOrderBy(`${String(field)} ${order}`);
+            }}
+            onRowClick={() => {}}
+            height={520}
+          />
 
-      <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
-        <div>Showing {paginatedRows.length} of {filteredRows.length}</div>
-        {pageSize !== "all" && (
-          <Pagination
-            count={Math.ceil(filteredRows.length / (pageSize as number))}
-            page={page}
-            onChange={(e, p) => setPage(p)}
-            size="small" />
-        )}
-      </div>
+          <div className="w-[95%] mx-auto flex items-center justify-between mt-2 text-sm">
+            <div>Showing {rows.length} of {totalCount}</div>
+           
+              <Pagination
+                count={Math.max(1, Math.ceil(totalCount / (pageSize as number)))}
+                page={page}
+                onChange={(e, p) => setPage(p)}
+                size="small"
+              />
+     
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default UserTable;
+export default UserTablePage;

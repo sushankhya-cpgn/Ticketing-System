@@ -1,5 +1,5 @@
 
-import { Search, Bell, User, Sun, Moon } from "lucide-react";
+import { Search, User, Sun, Moon } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { useState, useCallback, useEffect } from "react";
 import NepaliDate from "nepali-date-converter";
@@ -7,7 +7,7 @@ import DropdownMenu from "./DropdownMenu";
 // import Cookies from "js-cookie";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
-
+import NotificationBell from "../Notification/Notification";
 
 
 const getNepaliDate = () => new NepaliDate(new Date()).format("YYYY-MM-DD");
@@ -59,7 +59,8 @@ export default function Navbar({ isOpen, toggleSidebar }: { isOpen: boolean; tog
       {/* Right */}
       <div className="flex items-center space-x-4">
         <Search className="cursor-pointer hover:opacity-75" size={20} style={{ color: "var(--text-foreground)" }} />
-        <Bell className="cursor-pointer hover:opacity-75" size={20} style={{ color: "var(--text-foreground)" }} />
+        {/* <Bell className="cursor-pointer hover:opacity-75" size={20} style={{ color: "var(--text-foreground)" }} /> */}
+        <NotificationBell />
 
         {theme === "light" ? (
           <Moon size={20} onClick={toggleTheme} className="cursor-pointer" style={{ color: "var(--text-foreground)" }} />

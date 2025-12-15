@@ -1,178 +1,161 @@
+// TagTable.tsx
 import React, { useState } from "react";
-import {
-    CircularProgress,
-    Pagination,
-} from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
-import TableFilterBar from "./TableFilterBar";
-import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
+import { useDataTable } from "../../hooks/useDataTable";
 import ButtonComponent from "../Buttons/button";
 import DeleteButtonComponent from "../Buttons/DeleteButton";
 import Modal from "../Modal/Modal";
 import ProtectedAction from "../Auth/ProtectedAction";
 import Cookies from "js-cookie";
 import { TagApi } from "../../src/api/tagApi";
-// import { TagApi } from "../../src/api/tagApi";
 
 interface TagRecord {
-    tagID: number;
-    tagName: string;
+  tagID: number;
+  tagName: string;
 }
 
-
-
 const TagTable: React.FC = () => {
-    const navigate = useNavigate();
-    const addTag = () => navigate("/ticket/tag/addtag");
-     const handleEdit = (tag: TagRecord) => navigate(`/ticket/tag/edittag/${tag.tagID}`);
-    const [deleteTag, setDeleteTag] = useState<TagRecord | null>(null);
-     
-    const access_token = Cookies.get("accessToken");
+  const navigate = useNavigate();
+  const token = Cookies.get("accessToken") ?? "";
 
-    const {
-        loading,
-        paginatedRows,
-        filteredRows,
-        searchField,
-        setSearchField,
-        searchText,
-        setSearchText,
-        searchSelect,
-        setSearchSelect,
-        page,
-        setPage,
-        pageSize,
-        setPageSize,
-    } = useDataTable<TagRecord>({
-        apiUrl: "/Tags/GetAllTags", // Change URL later
-        token: access_token,
-        searchableFields: ["tagID", "tagName"],
-        defaultSearchField: "tagName",
-    });
+  const [deleteTag, setDeleteTag] = useState<TagRecord | null>(null);
 
-    const columns: Column<TagRecord>[] = [
-        { label: "Tag ID", field: "tagID", flex: 1 },
-        { label: "Tag Name", field: "tagName", flex: 2 },
-        {
-            label: "Actions",
-            field: "tagID",
-            flex: 1,
-            render: (row) => (
-                <div className="flex gap-4">
-                    <ProtectedAction title="Edit Tag" permission="Edit Tags">
-                        <Edit size={18} className="text-blue-600 cursor-pointer" onClick={() => handleEdit(row)}/>
-                            </ProtectedAction>
-                    <ProtectedAction title="Delete Tag" permission="Delete Tags">
-                        <Trash2 size={18} className="text-red-600 cursor-pointer" onClick={() => handleDelete(row)}/>
-                    </ProtectedAction>
-                </div>
-            ),
-        },
-    ];
+  const {
+    loading,
+    rows: data,
+    totalCount,
+    refetch,
+  } = useDataTable<TagRecord>({
+    apiUrl: "/Tags/GetAllTags",
+    token,
+    defaultPageSize: 50,
+  });
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-[70vh]">
-                <CircularProgress />
-            </div>
-        );
+  const handleEdit = (tag: TagRecord) => {
+    navigate(`/ticket/tag/edittag/${tag.tagID}`);
+  };
+
+  const handleDelete = (tag: TagRecord) => {
+    setDeleteTag(tag);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTag) return;
+
+    try {
+      await TagApi.deleteTag(deleteTag.tagID);
+      setDeleteTag(null);
+      refetch(); // Refresh list without full page reload
+    } catch (error) {
+      console.error("Failed to delete tag:", error);
+      alert("Failed to delete tag. Please try again.");
     }
+  };
 
-    const tableData = paginatedRows;
-
-        const handleDelete = (tag: TagRecord) => {
-        setDeleteTag(tag);
-    }
-
-    const handleConfirmDelete = async() =>{
-            if(!deleteTag) return;
-            // await api.delete(`/Tags`,{
-            //     headers:{
-            //         Authorization:`Bearer ${access_token}`
-            //     },
-            //     params:{id:deleteTag?.tagID}
-            // });
-            await TagApi.deleteTag(deleteTag?.tagID)
-            // await TagApi.deleteTag(deleteTag?.tagID)
-            setDeleteTag(null);
-            window.location.reload();
-    }
-
-
-    return (
-        <>
-               <Modal
-                isOpen={Boolean(deleteTag)}
-                onClose={() => setDeleteTag(null)}
-                title={`Delete Task: ${deleteTag?.tagName}`}
-            >
-                <div className="space-y-4 flex flex-col items-center">
-                    <p className="text-center text-sm">
-                        Are you sure you want to delete <strong>{deleteTag?.tagName}</strong>? This action
-                        cannot be undone.
-                    </p>
-
-                    <div className="flex gap-4">
-                        <ButtonComponent
-                           variant="outlined"
-                           sx={{bgcolor:"grey", ":hover":{bgcolor:"black"}}}
-                            onClick={() => setDeleteTag(null)}
-                        >
-                            Cancel
-                        </ButtonComponent>
-
-                        <DeleteButtonComponent
-                            onClick={handleConfirmDelete}
-                            
-                        >
-                            <Trash2 size={18}  /> Delete
-                        </DeleteButtonComponent>
-                    </div>
-                </div>
-            </Modal>
-
-     
-        <div className="w-full">
-
-            <TableFilterBar
-                searchField={searchField}
-                setSearchField={setSearchField}
-                searchText={searchText}
-                setSearchText={setSearchText}
-                searchSelect={searchSelect}
-                setSearchSelect={setSearchSelect}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                setPage={setPage}
-                dropdownFields={[]}
-                fieldOptions={[
-                    { label: "Tag ID", value: "tagID" },
-                    { label: "Tag Name", value: "tagName" },
-                ]}
-                onAddClick={addTag}
-                addButtonLabel="Add Tags"
-                addButtonPermission="Create Tags"
+  const columns: Column<TagRecord>[] = [
+    { label: "Tag ID", field: "tagID", flex: 1 },
+    { label: "Tag Name", field: "tagName", flex: 3 },
+    {
+      label: "Actions",
+      field: "tagID" as keyof TagRecord,
+      flex: 1.5,
+      render: (row) => (
+        <div className="flex gap-6">
+          <ProtectedAction permission="Edit Tags" title="Edit Tag">
+            <Edit
+              size={18}
+              className="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
+              onClick={() => handleEdit(row)}
             />
+          </ProtectedAction>
 
-            <VirtualizedTable<TagRecord> data={tableData} columns={columns} />
-
-            <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
-                <div>Showing {tableData.length} of {filteredRows.length}</div>
-
-                {pageSize !== "all" && (
-                    <Pagination
-                        count={Math.ceil(filteredRows.length / Number(pageSize))}
-                        page={page}
-                        onChange={(e, p) => setPage(p)}
-                        size="small"
-                    />
-                )}
-            </div>
+          <ProtectedAction permission="Delete Tags" title="Delete Tag">
+            <Trash2
+              size={18}
+              className="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
+              onClick={() => handleDelete(row)}
+            />
+          </ProtectedAction>
         </div>
-           </>
-    );
+      ),
+    },
+  ];
+
+  return (
+    <>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(deleteTag)}
+        onClose={() => setDeleteTag(null)}
+        title={`Delete Tag: ${deleteTag?.tagName}`}
+        size="sm"
+      >
+        <div className="py-6 px-8 text-center space-y-6">
+          <p className="text-gray-700">
+            Are you sure you want to delete the tag{" "}
+            <strong >{deleteTag?.tagName}</strong>?
+          </p>
+          <p className="text-sm text-gray-500">This action cannot be undone.</p>
+
+          <div className="flex justify-center gap-4 mt-6">
+              
+                      <ButtonComponent
+                        variant="outlined"
+                        sx={{ bgcolor: "grey", ":hover": { bgcolor: "black" } }}
+                        onClick={() => setDeleteTag(null)}
+                      >
+                        Cancel
+                      </ButtonComponent>
+          
+                      <DeleteButtonComponent onClick={handleConfirmDelete}>
+                        <Trash2 size={18} /> Delete
+                      </DeleteButtonComponent>
+                    </div>
+          </div>
+      </Modal>
+
+      <div className="w-full">
+        {/* Top Bar: Only Add Button + Page Size */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/50">
+          <div className="flex items-center gap-4">
+            <ProtectedAction permission="Create Tags" title="Add Tag">
+              <ButtonComponent
+                onClick={() => navigate("/ticket/tag/addtag")}
+                sx={{ backgroundColor: "green", color: "white" }}
+              >
+                Add Tag
+              </ButtonComponent>
+            </ProtectedAction>
+          </div>
+
+        </div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center h-[60vh]">
+            <CircularProgress />
+          </div>
+        ) : (
+          <>
+            {/* Table */}
+            <VirtualizedTable data={data} columns={columns} height={580} />
+
+            {/* Bottom Info + Pagination */}
+            <div className="w-[95%] mx-auto flex items-center justify-between mt-4 pb-6 text-sm text-gray-600">
+              <div>
+                Showing {data.length} of {totalCount} tag{totalCount !== 1 ? "s" : ""}
+              </div>
+
+              
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default TagTable;
