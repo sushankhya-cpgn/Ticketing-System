@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { CircularProgress, Pagination, Tooltip } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
-import TableFilterBar from "./TableFilterBar";
 import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
@@ -32,40 +31,33 @@ const StatusTable: React.FC = () => {
     setDeleteStatus(status);
   };
 
+
+
   const handleConfirmDelete = async () => {
     if (!deleteStatus) return;
 
-    // await api.delete(`/TicketStatus/Delete`, {
-    //   headers: { Authorization: `Bearer ${access_token}` },
-    //   params: { id: deleteStatus.statusID },
-    // });
-    const res = TicketStatusApi.deleteStatus(deleteStatus?.statusID)
 
-    setDeleteStatus(null);
-    console.log(res);
-    window.location.reload();
+    try {
+      const res = await TicketStatusApi.deleteStatus(deleteStatus?.statusID)
+      setDeleteStatus(null);
+      console.log(res);
+      refetch(); // Refresh without full reload
+    } catch (error) {
+      console.error("Failed to delete status:", error);
+      alert("Could not delete status. Please try again.");
+    }
   };
 
   const {
     loading,
-    paginatedRows,
-    filteredRows,
-    searchField,
-    setSearchField,
-    searchText,
-    setSearchText,
-    searchSelect,
-    setSearchSelect,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
+    rows,
+    refetch
+
   } = useDataTable<StatusRecord>({
     apiUrl: "/TicketStatus/GetAll",
     token: access_token,
-    searchableFields: ["statusID", "statusName", "isActive"],
-    defaultSearchField: "statusName",
-    
+
+
   });
 
   const columns: Column<StatusRecord>[] = [
@@ -85,14 +77,14 @@ const StatusTable: React.FC = () => {
       render: (row) => (
         <div className="flex gap-4">
           <ProtectedAction title="Edit Status" permission="Edit Ticket Status">
-          <Tooltip title="Edit Status">
-            <Edit
-              size={18}
-              className="text-blue-600 cursor-pointer"
-              onClick={() => handleEdit(row)}
-            />
-          </Tooltip>
-            </ProtectedAction>
+            <Tooltip title="Edit Status">
+              <Edit
+                size={18}
+                className="text-blue-600 cursor-pointer"
+                onClick={() => handleEdit(row)}
+              />
+            </Tooltip>
+          </ProtectedAction>
 
           <ProtectedAction title="Edit Status" permission="Delete Ticket Status">
             <Trash2
@@ -114,7 +106,7 @@ const StatusTable: React.FC = () => {
     );
   }
 
-  const tableData = paginatedRows;
+  const tableData = rows;
 
   return (
     <>
@@ -148,48 +140,23 @@ const StatusTable: React.FC = () => {
       </Modal>
 
       <div className="w-full">
-        <TableFilterBar
-          searchField={searchField}
-          setSearchField={setSearchField}
-          searchText={searchText}
-          setSearchText={setSearchText}
-          searchSelect={searchSelect}
-          setSearchSelect={setSearchSelect}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          setPage={setPage}
-          dropdownFields={["isActive"]}
-          fieldOptions={[
-            { label: "Status ID", value: "statusID" },
-            { label: "Status Name", value: "statusName" },
-          ]}
-          selectOptions={{
-            isActive: [
-              { label: "Active", value: "true" },
-              { label: "Inactive", value: "false" },
-            ],
-          }}
-          onAddClick={addStatus}
-          addButtonLabel="Add Status"
-          addButtonPermission="Create Ticket Status"
-        />
 
-        <VirtualizedTable<StatusRecord> data={tableData} columns={columns} />
-
-        <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
-          <div>
-            Showing {tableData.length} of {filteredRows.length}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/50">
+          <div className="flex items-center gap-4">
+            <ProtectedAction permission="Create Ticket Status" title="Add Status">
+              <ButtonComponent
+                onClick={addStatus}
+                sx={{ backgroundColor: "green", color: "white" }}
+              >
+                Add Status
+              </ButtonComponent>
+            </ProtectedAction>
           </div>
 
-          {pageSize !== "all" && (
-            <Pagination
-              count={Math.ceil(filteredRows.length / Number(pageSize))}
-              page={page}
-              onChange={(e, p) => setPage(p)}
-              size="small"
-            />
-          )}
         </div>
+        <VirtualizedTable<StatusRecord> data={tableData} columns={columns} />
+
+
       </div>
     </>
   );

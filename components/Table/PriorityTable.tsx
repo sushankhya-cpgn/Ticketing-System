@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { CircularProgress, Pagination } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { Edit, Trash2 } from "lucide-react";
-import TableFilterBar from "./TableFilterBar";
 import { useDataTable } from "../../hooks/useDataTable";
 import { useNavigate } from "react-router-dom";
 import ButtonComponent from "../Buttons/button";
@@ -36,38 +35,27 @@ const PriorityTable: React.FC = () => {
     setDeletePriority(priority);
   };
 
-  const handleConfirmDelete = async () => {
+const handleConfirmDelete = async () => {
     if (!deletePriority) return;
 
-    // await api.delete(`/TicketPriority/DeleteTicketPriority`, {
-    //   headers: { Authorization: `Bearer ${access_token}` },
-    //   params: { id: deletePriority.priorityID }, // ✅ Correct param
-    // });
-    TicketPriorityApi.deleteTicketPriority(deletePriority.priorityID)
-
-    setDeletePriority(null);
-    window.location.reload();
+    try {
+      await TicketPriorityApi.deleteTicketPriority(deletePriority.priorityID);
+      setDeletePriority(null);
+      refetch(); // Refresh without full reload
+    } catch (error) {
+      console.error("Failed to delete priority:", error);
+      alert("Could not delete priority. Please try again.");
+    }
   };
 
   const {
     loading,
-    paginatedRows,
-    filteredRows,
-    searchField,
-    setSearchField,
-    searchText,
-    setSearchText,
-    searchSelect,
-    setSearchSelect,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
+    rows,
+    refetch,
+  
   } = useDataTable<PriorityRecord>({
     apiUrl: "/TicketPriority/GetAllTicketPriority", 
     token: access_token,
-    searchableFields: ["priorityID", "priorityName","isActive"],
-    defaultSearchField: "priorityName",
   });
 
   const columns: Column<PriorityRecord>[] = [
@@ -108,7 +96,7 @@ const PriorityTable: React.FC = () => {
     );
   }
 
-  const tableData = paginatedRows;
+  const tableData = rows;
 
   return (
     <>
@@ -142,46 +130,23 @@ const PriorityTable: React.FC = () => {
       </Modal>
 
       <div className="w-full">
-        <TableFilterBar
-          searchField={searchField}
-          setSearchField={setSearchField}
-          searchText={searchText}
-          setSearchText={setSearchText}
-          searchSelect={searchSelect}
-          setSearchSelect={setSearchSelect}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          setPage={setPage}
-          dropdownFields={["isActive"]}
-          fieldOptions={[
-            { label: "Priority ID", value: "priorityID" },
-            { label: "Priority Name", value: "priorityName" },
-          ]}
-        selectOptions={{
-          isActive: [
-            { label: "Active", value: "true" },
-            { label: "Inactive", value: "false" },
-          ],
-        }}
-          onAddClick={addPriority}
-          addButtonLabel="Add Priority"
-          addButtonPermission="Create Ticket Priority"
-        />
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/50">
+          <div className="flex items-center gap-4">
+            <ProtectedAction permission="Create Ticket Priority" title="Add Priority">
+              <ButtonComponent
+                onClick={addPriority}
+                sx={{ backgroundColor: "green", color: "white" }}
+              >
+                Add Priority
+              </ButtonComponent>
+            </ProtectedAction>
+          </div>
+
+        </div>
 
         <VirtualizedTable<PriorityRecord> data={tableData} columns={columns} />
 
-        <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
-          <div>Showing {tableData.length} of {filteredRows.length}</div>
-
-          {pageSize !== "all" && (
-            <Pagination
-              count={Math.ceil(filteredRows.length / Number(pageSize))}
-              page={page}
-              onChange={(e, p) => setPage(p)}
-              size="small"
-            />
-          )}
-        </div>
+      
       </div>
     </>
   );

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { CircularProgress, Pagination} from "@mui/material";
+import React, {  useState } from "react";
+import { CircularProgress, Pagination } from "@mui/material";
 import VirtualizedTable, { type Column } from "./VirtualizedTable";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
@@ -28,27 +28,26 @@ interface TicketRecord {
 const TicketTable: React.FC = () => {
     const navigate = useNavigate();
     const [deleteTicket, setDeleteTicket] = useState<TicketRecord | null>(null);
-    const access_token = Cookies.get("accessToken");
+    const token = Cookies.get("accessToken") ?? "";
+
 
     const {
         loading,
-        paginatedRows,
-        filteredRows,
-        searchField,
-        setSearchField,
-        searchText,
-        setSearchText,
-        searchSelect,
-        setSearchSelect,
+        rows,
+        totalCount,
         page,
         setPage,
         pageSize,
         setPageSize,
+        searchTerm,
+        setSearchTerm,
+        columnFilters,
+        setColumnFilters,
+        refetch
     } = useDataTable<TicketRecord>({
         apiUrl: "/Ticket/GetAll",
-        token: access_token,
-        searchableFields: ["title"],
-        defaultSearchField: "title",
+        token,
+        defaultPageSize: 10,
     });
 
     const addTicket = () => navigate("/ticket/createticket");
@@ -57,17 +56,17 @@ const TicketTable: React.FC = () => {
         setDeleteTicket(ticket);
     }
 
-    
-    const handleConfirmDelete = async() =>{
-            if(!deleteTicket) return;
-            // await api.delete(`/Ticket/Delete/${deleteTicket?.ticketID}`,{
-            //     headers:{
-            //         Authorization:`Bearer ${access_token}`
-            //     },
-            // });
-            await TicketApi.deleteTicket(deleteTicket?.ticketID)
-            setDeleteTicket(null);
-            window.location.reload();
+
+    const handleConfirmDelete = async () => {
+        if (!deleteTicket) return;
+        // await api.delete(`/Ticket/Delete/${deleteTicket?.ticketID}`,{
+        //     headers:{
+        //         Authorization:`Bearer ${access_token}`
+        //     },
+        // });
+        await TicketApi.deleteTicket(deleteTicket?.ticketID)
+        setDeleteTicket(null);
+        refetch();
     }
 
 
@@ -78,27 +77,27 @@ const TicketTable: React.FC = () => {
         { label: "StatusName", field: "statusName", flex: 2 },
         { label: "PriorityName", field: "priorityName", flex: 3 },
         // { label: "TagName", field: "tagNames", flex: 2 },
-            {
-        label: "TagName",
-        field: "tagNames",
-        flex: 3,
-        render: (row) => (
-            <div className="flex flex-wrap gap-1">
-                {row.tagNames?.length > 0 ? (
-                    row.tagNames.map((tag, i) => (
-                        <span
-                            key={i}
-                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
-                        >
-                            {tag}
-                        </span>
-                    ))
-                ) : (
-                    <span className="text-gray-400 text-xs">No Tags</span>
-                )}
-            </div>
-        ),
-    },
+        {
+            label: "TagName",
+            field: "tagNames",
+            flex: 3,
+            render: (row) => (
+                <div className="flex flex-wrap gap-1">
+                    {row.tagNames?.length > 0 ? (
+                        row.tagNames.map((tag, i) => (
+                            <span
+                                key={i}
+                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+                            >
+                                {tag}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-gray-400 text-xs">No Tags</span>
+                    )}
+                </div>
+            ),
+        },
         { label: "CreatedBy", field: "createdByName", flex: 2 },
         { label: "AssignedTo", field: "assignedToName", flex: 2 },
         { label: "CreatedAt", field: "createdAt", flex: 2 },
@@ -128,15 +127,12 @@ const TicketTable: React.FC = () => {
 
     ];
 
-    if (loading)
-        return (
-            <div className="flex items-center justify-center h-[70vh]">
-                <CircularProgress />
-            </div>
-        );
+ 
 
     return (
+
         <>
+            {/* Delete Confirmation Modal */}
             <Modal
                 isOpen={Boolean(deleteTicket)}
                 onClose={() => setDeleteTicket(null)}
@@ -167,50 +163,59 @@ const TicketTable: React.FC = () => {
                 </div>
             </Modal>
 
+
             <div className="w-full">
-
+                {/* Always render filter bar — even during loading */}
                 <TableFilterBar
-                    searchField={searchField}
-                    setSearchField={setSearchField}
-                    searchText={searchText}
-                    setSearchText={setSearchText}
-                    searchSelect={searchSelect}
-                    setSearchSelect={setSearchSelect}
-                    pageSize={pageSize}
-                    setPageSize={setPageSize}
-                    setPage={setPage}
-                    dropdownFields={["roleName", "userStatusName"]}
-                    fieldOptions={[
-                        { label: "ticketID", value: "ticketID" },
-                        { label: "title", value: "title" },
-                        { label: "statusName", value: "statusName" },
-                        { label: "priorityName", value: "priorityName" },
-                        { label: "tagNames", value: "tagNames" },
-                        { label: "createdByName", value: "createdByName" },
-                        { label: "assignedToName", value: "assignedToName" }
-
-                    ]}
-
+                    searchText={searchTerm}
+                    setSearchText={setSearchTerm}
+                    dropdownFields={["statusName", "priorityName"]} // adjust as needed
+                    selectOptions={{
+                        statusName: [
+                            { label: "Open", value: "Open" },
+                            { label: "Closed", value: "Closed" },
+                            // ... add your actual statuses
+                        ],
+                        priorityName: [
+                            { label: "High", value: "High" },
+                            { label: "Medium", value: "Medium" },
+                            { label: "Low", value: "Low" },
+                        ],
+                    }}
                     onAddClick={addTicket}
                     addButtonLabel="Add Ticket"
                     addButtonPermission="Create Ticket"
-
+                    pageSize={pageSize}
+                    setPageSize={setPageSize}
+                    setPage={setPage}
                 />
 
-                <VirtualizedTable<TicketRecord> data={paginatedRows} columns={columns} />
+                {/* Show loading spinner INSIDE table area only */}
+                {loading ? (
+                    <div className="flex items-center justify-center h-[60vh]">
+                        <CircularProgress />
+                    </div>
+                ) : (
+                    <>
+                        <VirtualizedTable<TicketRecord> data={rows} columns={columns} />
 
-                <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
-                    <div>Showing {paginatedRows.length} of {filteredRows.length}</div>
-                    {pageSize !== "all" && (
-                        <Pagination
-                            count={Math.ceil(filteredRows.length / (pageSize as number))}
-                            page={page}
-                            onChange={(e, p) => setPage(p)}
-                            size="small" />
-                    )}
-                </div>
+                        <div className="w-[95%] mx-auto flex items-center justify-between text-sm mt-2">
+                            <div>Showing {rows.length} of {totalCount}</div>
+
+                            {pageSize !== "all" && (
+                                <Pagination
+                                    count={Math.max(1, Math.ceil(totalCount / (pageSize as number)))}
+                                    page={page}
+                                    onChange={(e, p) => setPage(p)}
+                                    size="small"
+                                />
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
         </>
+
     );
 };
 
