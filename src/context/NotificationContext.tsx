@@ -62,7 +62,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode; userId: numbe
   };
 
   const markAsRead = async (notificationId: number) => {
-    await api.post(`/notifications/mark-read`, { userId, notificationId });
+    await api.post(`/notifications/${notificationId}/read`);
     setNotifications(prev => prev.map(n => n.notificationId === notificationId ? { ...n, isRead: true } : n));
   };
 
@@ -73,7 +73,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode; userId: numbe
   };
 
   const archive = async (notificationId: number) => {
-    await api.post(`/notifications/archive`, { userId, notificationId });
+    await api.post(`/notifications/${notificationId}/archive`);
     setNotifications(prev => prev.filter(n => n.notificationId !== notificationId));
   };
 

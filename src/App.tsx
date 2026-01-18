@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import "./App.css";
 
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense } from "react";
 import LoginPage from "../pages/LoginPage";
 import useAuth from "../hooks/useAuth";
 import CircularLoader from "../components/Loader/CircularLoader";

@@ -41,6 +41,12 @@ const navItems: NavItem[] = [
 
 
         ],
+      },
+      {
+        label: "Reports Configuration",
+        children: [
+          { label: "Generate Report", path: "/reports" },
+        ],
       }
     ],
   }

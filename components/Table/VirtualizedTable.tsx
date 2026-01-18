@@ -263,7 +263,157 @@
 
 
 // src/components/VirtualizedTable.tsx
-import React, { useState } from "react";
+// import React, { useState } from "react";
+// import { FixedSizeList as List } from "react-window";
+// import AutoSizer from "react-virtualized-auto-sizer";
+// import { Paper, Skeleton } from "@mui/material";
+// import { ArrowUp, ArrowDown } from "lucide-react";
+
+// export interface Column<T> {
+//   label: string;
+//   field: keyof T;
+//   flex?: number;
+//   render?: (row: T) => React.ReactNode;
+//   sortable?: boolean;
+// }
+
+// interface Props<T> {
+//   data: T[];
+//   columns: Column<T>[];
+//   height?: number | string;
+//   rowHeight?: number;
+//   loading?: boolean;
+//   onRowClick?: (row: T) => void;
+//   // emit sort changes to parent: (field, order)
+//   onSort?: (field: keyof T, order: "asc" | "desc") => void;
+// }
+
+// function VirtualizedTable<T extends object>({
+//   data,
+//   columns,
+//   height = 500,
+//   rowHeight = 48,
+//   loading = false,
+//   onRowClick,
+//   onSort,
+// }: Props<T>) {
+//   const [sortField, setSortField] = useState<keyof T | null>(null);
+//   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+//   const [selectedRow, setSelectedRow] = useState<number | null>(null);
+
+//   const toggleSort = (field: keyof T) => {
+//     const nextOrder =
+//       sortField === field && sortOrder === "asc" ? "desc" : "asc";
+
+//     setSortField(field);
+//     setSortOrder(nextOrder);
+
+//     onSort?.(field, nextOrder);
+//   };
+
+//   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+//     if (loading) {
+//       return (
+//         <div style={{ ...style, padding: "0.75rem 1rem" }}>
+//           <Skeleton variant="rectangular" height={rowHeight - 10} />
+//         </div>
+//       );
+//     }
+
+//     const row = data[index] as T;
+//     return (
+//       <div
+//         style={{
+//           ...style,
+//           display: "flex",
+//           alignItems: "center",
+//           padding: "0.75rem 1rem",
+//           borderBottom: "1px solid var(--text-muted)",
+//           background: selectedRow === index
+//             ? "var(--background-accent)"
+//             : index % 2 === 0
+//               ? "var(--background-secondary)"
+//               : "var(--background)",
+//           cursor: "pointer",
+//           transition: "all 0.15s ease-in-out",
+//         }}
+//         onClick={() => {
+//           setSelectedRow(index);
+//           onRowClick?.(row);
+//         }}
+//         className="text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
+//       >
+//         {columns.map((col, i) => (
+//           <div key={i} style={{ flex: col.flex || 1 }}>
+//             {col.render ? col.render(row) : (row[col.field] as any)}
+//           </div>
+//         ))}
+//       </div>
+//     );
+//   };
+
+//   return (
+//     <Paper
+//       sx={{
+//         height: typeof height === "number" ? `${height}px` : height,
+//         width: "95%",
+//         margin: "auto",
+//         mt: 2,
+//         border: "1px solid var(--text-muted)",
+//         display: "flex",
+//         flexDirection: "column",
+//         backgroundColor: "var(--background)",
+//         color: "var(--text-foreground)",
+//         overflow: "hidden",
+//       }}
+//     >
+//       <div
+//         className="flex font-semibold text-sm px-4 py-2 sticky top-0 z-10"
+//         style={{
+//           borderBottom: "1px solid var(--text-muted)",
+//           background: "var(--background-secondary)",
+//         }}
+//       >
+//         {columns.map((col, i) => (
+//           <div
+//             key={i}
+//             style={{ flex: col.flex || 1, display: "flex", alignItems: "center", gap: 6, cursor: col.sortable ? "pointer" : "default" }}
+//             onClick={() => col.sortable && toggleSort(col.field)}
+//           >
+//             {col.label}
+//             {sortField === col.field && (sortOrder === "asc" ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+//           </div>
+//         ))}
+//       </div>
+
+//       {!loading && data.length === 0 ? (
+//         <div className="flex justify-center items-center h-40 text-center text-gray-500">
+//           No data found
+//         </div>
+//       ) : (
+//         <div className="flex-1">
+//           <AutoSizer>
+//             {({ height, width }) => (
+//               <List
+//                 height={height}
+//                 itemCount={loading ? Math.min(7, 10) : data.length}
+//                 itemSize={rowHeight}
+//                 width={width}
+//               >
+//                 {Row}
+//               </List>
+//             )}
+//           </AutoSizer>
+//         </div>
+//       )}
+//     </Paper>
+//   );
+// }
+
+// export default VirtualizedTable;
+
+
+import React, { useState, useMemo } from "react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Paper, Skeleton } from "@mui/material";
@@ -273,6 +423,9 @@ export interface Column<T> {
   label: string;
   field: keyof T;
   flex?: number;
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
   render?: (row: T) => React.ReactNode;
   sortable?: boolean;
 }
@@ -284,7 +437,6 @@ interface Props<T> {
   rowHeight?: number;
   loading?: boolean;
   onRowClick?: (row: T) => void;
-  // emit sort changes to parent: (field, order)
   onSort?: (field: keyof T, order: "asc" | "desc") => void;
 }
 
@@ -302,14 +454,17 @@ function VirtualizedTable<T extends object>({
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
 
   const toggleSort = (field: keyof T) => {
-    const nextOrder =
-      sortField === field && sortOrder === "asc" ? "desc" : "asc";
-
+    const nextOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
     setSortOrder(nextOrder);
-
     onSort?.(field, nextOrder);
   };
+
+  // Total width for scrollable table
+  const totalWidth = useMemo(
+    () => columns.reduce((sum, col) => sum + (col.width || 150), 0),
+    [columns]
+  );
 
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
     if (loading) {
@@ -321,21 +476,20 @@ function VirtualizedTable<T extends object>({
     }
 
     const row = data[index] as T;
+
     return (
       <div
         style={{
           ...style,
           display: "flex",
-          alignItems: "center",
-          padding: "0.75rem 1rem",
           borderBottom: "1px solid var(--text-muted)",
-          background: selectedRow === index
-            ? "var(--background-accent)"
-            : index % 2 === 0
-              ? "var(--background-secondary)"
-              : "var(--background)",
+          background:
+            selectedRow === index
+              ? "var(--background-accent)"
+              : index % 2 === 0
+                ? "var(--background-secondary)"
+                : "var(--background)",
           cursor: "pointer",
-          transition: "all 0.15s ease-in-out",
         }}
         onClick={() => {
           setSelectedRow(index);
@@ -343,11 +497,34 @@ function VirtualizedTable<T extends object>({
         }}
         className="text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
       >
-        {columns.map((col, i) => (
-          <div key={i} style={{ flex: col.flex || 1 }}>
-            {col.render ? col.render(row) : (row[col.field] as any)}
-          </div>
-        ))}
+        {columns.map((col, i) => {
+          const cellStyle: React.CSSProperties = {
+            display: "flex",
+            alignItems: "center",
+            padding: "0 12px",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          };
+
+          if (col.width !== undefined) {
+            cellStyle.width = `${col.width}px`;
+            cellStyle.flex = "0 0 auto";
+          } else if (col.flex !== undefined) {
+            cellStyle.flex = col.flex;
+          } else {
+            cellStyle.flex = 1;
+          }
+
+          if (col.minWidth !== undefined) cellStyle.minWidth = `${col.minWidth}px`;
+          if (col.maxWidth !== undefined) cellStyle.maxWidth = `${col.maxWidth}px`;
+
+          return (
+            <div key={i} style={cellStyle}>
+              {col.render ? col.render(row) : (row[col.field] as any)}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -356,9 +533,8 @@ function VirtualizedTable<T extends object>({
     <Paper
       sx={{
         height: typeof height === "number" ? `${height}px` : height,
-        width: "95%",
+        width: "100%",
         margin: "auto",
-        mt: 2,
         border: "1px solid var(--text-muted)",
         display: "flex",
         flexDirection: "column",
@@ -367,46 +543,65 @@ function VirtualizedTable<T extends object>({
         overflow: "hidden",
       }}
     >
-      <div
-        className="flex font-semibold text-sm px-4 py-2 sticky top-0 z-10"
-        style={{
-          borderBottom: "1px solid var(--text-muted)",
-          background: "var(--background-secondary)",
-        }}
-      >
-        {columns.map((col, i) => (
-          <div
-            key={i}
-            style={{ flex: col.flex || 1, display: "flex", alignItems: "center", gap: 6, cursor: col.sortable ? "pointer" : "default" }}
-            onClick={() => col.sortable && toggleSort(col.field)}
-          >
-            {col.label}
-            {sortField === col.field && (sortOrder === "asc" ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
-          </div>
-        ))}
-      </div>
+      {/* Scroll wrapper */}
+      <div style={{ overflowX: "auto", flex: 1 }}>
+        <div style={{ minWidth: totalWidth, display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {!loading && data.length === 0 ? (
-        <div className="flex justify-center items-center h-40 text-center text-gray-500">
-          No data found
-        </div>
-      ) : (
-        <div className="flex-1">
-          <AutoSizer>
-            {({ height, width }) => (
-              <List
-                height={height}
-                itemCount={loading ? Math.min(7, 10) : data.length}
-                itemSize={rowHeight}
-                width={width}
+          {/* Header */}
+          <div
+            className="flex font-semibold text-sm px-0 py-3 sticky top-0 z-10 border-b"
+            style={{
+              minWidth: totalWidth,
+              borderBottom: "1px solid var(--text-muted)",
+              background: "var(--background-secondary)",
+            }}
+          >
+            {columns.map((col, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "0 12px",
+                  cursor: col.sortable ? "pointer" : "default",
+                  userSelect: "none",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  width: col.width ? `${col.width}px` : undefined,
+                  flex: col.width ? "0 0 auto" : col.flex ?? 1,
+                  minWidth: col.minWidth ? `${col.minWidth}px` : undefined,
+                  maxWidth: col.maxWidth ? `${col.maxWidth}px` : undefined,
+                }}
+                onClick={() => col.sortable && toggleSort(col.field)}
               >
-                {Row}
-              </List>
-            )}
-          </AutoSizer>
+                {col.label}
+                {sortField === col.field &&
+                  (sortOrder === "asc" ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+              </div>
+            ))}
+          </div>
+
+          {/* Body */}
+          <div style={{ flex: 1 }}>
+            <AutoSizer>
+              {({ height, width }) => (
+                <List
+                  height={height}
+                  itemCount={loading ? Math.min(7, 10) : data.length}
+                  itemSize={rowHeight}
+                  width={Math.max(width, totalWidth)} // ensure min width matches header
+                >
+                  {Row}
+                </List>
+              )}
+            </AutoSizer>
+          </div>
         </div>
-      )}
+      </div>
     </Paper>
+
   );
 }
 
