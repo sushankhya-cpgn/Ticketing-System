@@ -1,5 +1,6 @@
-import { z } from "zod";
+import {  z } from "zod";
 import loginSchema from "../components/schema/loginSchema";
+import forgotPasswordSchema from "../components/schema/forgotPasswordSchema"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -10,13 +11,15 @@ import TextFieldComponent from "../components/Fields/TextFieldComponent";
 import CheckboxField from "../components/Fields/CheckBoxField";
 import { type AppDispatch, type RootState } from "../app/store";
 import ButtonComponent from "../components/Buttons/button";
+import LoginCard from "../components/Card/LoginCard"
 import ThemeToggle from "../src/ThemeToggle";
 import { toast } from "react-toastify";
-// import Cookies from "js-cookie";
 import useAuth from "../hooks/useAuth";
 import { CircularProgress } from "@mui/material";
+import { UserApi } from "../src/api/userApi";
 
 type LoginFormProps = z.infer<typeof loginSchema>;
+type ForgotPasswordProps = z.infer<typeof forgotPasswordSchema>;
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,15 +30,38 @@ export default function LoginPage() {
   );
 
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [forgotpassword, setForgotPassword] = useState<boolean>(false)
 
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   formState: { errors },
+  // } = useForm<LoginFormProps>({
+  //   resolver: zodResolver(loginSchema),
+  //   mode: "onChange",
+  // });
+
+
+  // For Login Form
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register: loginRegister,
+    handleSubmit: handleLoginSubmit,
+    formState: { errors:loginErrors },
   } = useForm<LoginFormProps>({
     resolver: zodResolver(loginSchema),
-    mode: "onChange",
-  });
+    mode: "onChange"
+  })
+
+  // For Forgot Password Form
+
+  const {
+    register: forgotpasswordRegister,
+    handleSubmit: handleforgetPasswordSubmit,
+    formState: { errors:forgotPasswordErrors,isSubmitting: isForgotSubmitting },
+  } = useForm<ForgotPasswordProps>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onChange"
+  })
 
   // ---------------------------------------
   // SUBMIT FORM (new login flow)
@@ -52,6 +78,11 @@ export default function LoginPage() {
       toast.error(err?.message || "Invalid credentials");
     }
   };
+
+  const handleForgotPassword = () => {
+    setForgotPassword(true);
+  }
+
 
   // ---------------------------------------
   // AUTO-LOGIN FROM COOKIES
@@ -79,33 +110,39 @@ export default function LoginPage() {
     );
   }
 
+  const sendLink = async (data: { email: string }) => {
+    try {
+      console.log(data.email)
+      await UserApi.forgetPassword(data.email);
+      toast.success("Verification link sent to your email");
+
+    }
+    catch (error:any) {
+      toast.error(error.response.data.message)
+      console.error(error.response.data.message);
+    }
+  }
+
   return (
     <>
       <div className="flex justify-end p-4">
         <ThemeToggle />
       </div>
-      <div
-        className="flex items-center justify-center min-h-screen"
-        style={{ background: "var(--background)" }}
-      >
+      <LoginCard>
         <div
-          className="flex w-full max-w-4xl shadow-lg rounded-lg overflow-hidden h-[450px] gap-10"
+          className="w-1/2 flex justify-center pl-2 rounded-lg items-center"
           style={{ background: "var(--background-secondary)" }}
         >
-          {/* Left Side - Logo */}
-          <div
-            className="w-1/2 flex justify-center pl-2 rounded-lg items-center"
+          <img
+            src="/images/logo2.png"
+            alt="Logo"
+            className="max-w-full max-h-[100px]"
             style={{ background: "var(--background-secondary)" }}
-          >
-            <img
-              src="/images/logo2.png"
-              alt="Logo"
-              className="max-w-full max-h-[100px]"
-              style={{ background: "var(--background-secondary)" }}
-            />
-          </div>
+          />
+        </div>
 
-          {/* Right Side - Login Form */}
+        {/* Right Side - Login Form */}
+        {!forgotpassword ?
           <div
             className="w-1/2 flex items-center justify-center"
             style={{ background: "var(--background-secondary)" }}
@@ -122,14 +159,14 @@ export default function LoginPage() {
                 <p className="text-red-500 text-sm text-center mb-4">{error}</p>
               )}
 
-              <form className="space-y-4" onSubmit={handleSubmit(submitForm)}>
+              <form className="space-y-4" onSubmit={handleLoginSubmit(submitForm)}>
                 {/* Username */}
                 <TextFieldComponent
                   label="Username"
                   name="username"
                   placeholder="vwrapcode.info@gmail.com"
-                  register={register}
-                  errors={errors}
+                  register={loginRegister}
+                  errors={loginErrors}
                 />
 
                 {/* Password */}
@@ -139,8 +176,8 @@ export default function LoginPage() {
                     name="password"
                     label="Password"
                     placeholder="••••••••"
-                    register={register}
-                    errors={errors}
+                    register={loginRegister}
+                    errors={loginErrors}
                   />
                 </div>
 
@@ -151,13 +188,13 @@ export default function LoginPage() {
                     edit={rememberMe}
                     setEdit={setRememberMe}
                   />
-                  <a
-                    href="#"
-                    className="text-xs hover:underline"
+                  <p
+                    className="text-xs hover:underline cursor-pointer "
                     style={{ color: "var(--foreground)" }}
+                    onClick={handleForgotPassword}
                   >
                     Forgot password?
-                  </a>
+                  </p>
                 </div>
 
                 {/* Submit Button */}
@@ -183,8 +220,56 @@ export default function LoginPage() {
               </p>
             </div>
           </div>
-        </div>
-      </div>
+          : (
+            <div className="w-full max-w-md p-6 flex flex-col pt-20">
+              <h2
+                className="text-2xl font-bold text-center mb-2"
+                style={{ color: "var(--foreground)" }}
+              >
+                Forgot Password
+              </h2>
+
+
+              <p
+                className="text-sm text-center mb-6 opacity-80"
+                style={{ color: "var(--foreground)" }}
+              >
+                Enter your email address and we’ll send you an email with a reset link to reset your password. <strong>Please click on the link to change the password.</strong>
+              </p>
+              <form onSubmit={handleforgetPasswordSubmit(sendLink)}>
+                <TextFieldComponent
+                  label="Email"
+                  name="email"
+                  placeholder="Enter your email"
+                  register={forgotpasswordRegister}
+                  errors={forgotPasswordErrors}
+                />
+                <div className=" flex gap-3 mt-3">
+                  <ButtonComponent type="submit" width="50%" loading={isForgotSubmitting}>
+                    {!isForgotSubmitting?'Send Link':'Sending Link'}
+                  </ButtonComponent>
+
+                  <button
+                    type="button"
+                    className="text-sm hover:underline mt-2 w-1/2"
+                    style={{ color: "var(--foreground)" }}
+                    onClick={() => setForgotPassword(false)}
+
+                  >
+
+                    Back to login
+                  </button>
+
+                </div>
+
+              </form>
+            </div>
+
+          )
+        }
+      </LoginCard>
     </>
+
+
   );
 }

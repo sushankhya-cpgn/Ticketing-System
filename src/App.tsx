@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import "./App.css";
 
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense } from "react";
 import LoginPage from "../pages/LoginPage";
 import useAuth from "../hooks/useAuth";
 import CircularLoader from "../components/Loader/CircularLoader";
@@ -31,6 +31,8 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { useSelector } from "react-redux"; // if user/token in Redux
 // import notificationConnection, { startNotificationConnection } from "./services/signalR/notification";
 import Cookies from "js-cookie";
+import ForgotPassword from "../pages/ForgotPassword";
+import ChangePasswordPage from "../pages/ForgotPassword";
 
 
 
@@ -123,6 +125,8 @@ function App() {
         <Routes>
         
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forget-password" element={<ChangePasswordPage/>}/>
+
           <Route element={<ProtectedRoute />}>
             {/* <Route path="/" element={<InsuranceForm />} /> */}
             <Route path="/" element={<DashboardPage />} />

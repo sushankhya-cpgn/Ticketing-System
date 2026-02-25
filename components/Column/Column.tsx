@@ -10,6 +10,7 @@ export default function Column({ title, children }:any) {
         minHeight: 100,
       }}
     >
+      
       <h3 style={{ margin: "0 0 12px 0" }}>{title}</h3>
       {children}
     </div>

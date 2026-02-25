@@ -1,7 +1,7 @@
 // TaskTable.tsx — No Filters, Clean & Professional
 import React, { useState } from "react";
-import { CircularProgress } from "@mui/material";
-import VirtualizedTable, { type Column } from "./VirtualizedTable";
+import { CircularProgress, Box } from "@mui/material";
+import { DataGrid, type GridColDef, type GridPaginationModel } from "@mui/x-data-grid";
 import { Edit, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
@@ -38,6 +38,8 @@ const TaskTable: React.FC = () => {
     defaultPageSize: 50,
   });
 
+  // DataGrid pagination model (0-based)
+
   const handleEdit = (task: TaskRecord) => {
     navigate(`/task/edit/${task.taskID}`);
   };
@@ -54,52 +56,76 @@ const TaskTable: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDeleteTask(null);
-      refetch(); // Refresh data without reload
+      refetch(); // Refresh data
     } catch (error) {
       console.error("Delete failed:", error);
       alert("Failed to delete task. Please try again.");
     }
   };
 
-  const columns: Column<TaskRecord>[] = [
-    { label: "ID", field: "taskID", flex: 0.6 },
-    { label: "Key", field: "taskKey", flex: 0.8 },
-    { label: "Task Name", field: "taskName", flex: 2.2, sortable: true },
+  // DataGrid columns
+  const columns: GridColDef<TaskRecord>[] = [
     {
-      label: "Status",
+      field: "taskID",
+      headerName: "ID",
+      flex: 0.6,
+      sortable: true,
+    },
+    {
+      field: "taskKey",
+      headerName: "Key",
+      flex: 0.8,
+      sortable: true,
+    },
+    {
+      field: "taskName",
+      headerName: "Task Name",
+      flex: 2.2,
+      sortable: true,
+    },
+    {
       field: "taskStatus",
+      headerName: "Status",
       flex: 1,
-      render: (row) => (
-        <span className={`font-medium ${row.taskStatus ? "text-green-600" : "text-red-600"}`}>
-          {row.taskStatus ? "Active" : "Inactive"}
+      sortable: true,
+      renderCell: (params) => (
+        <span className={`font-medium ${params.value ? "text-green-600" : "text-red-600"}`}>
+          {params.value ? "Active" : "Inactive"}
         </span>
       ),
     },
-    { label: "Details", field: "taskDetail", flex: 2.5 },
     {
-      label: "URL",
+      field: "taskDetail",
+      headerName: "Details",
+      flex: 2.5,
+    },
+    {
       field: "taskURL",
+      headerName: "URL",
       flex: 1.8,
-      render: (row) => (
+      renderCell: (params) => (
         <a
-          
+          href={params.value}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-blue-600 hover:underline text-sm truncate block max-w-full"
         >
-          {row.taskURL || "-"}
+          {params.value || "-"}
         </a>
       ),
     },
     {
-      label: "Actions",
-      field: "taskID" as keyof TaskRecord,
+      field: "actions",
+      headerName: "Actions",
       flex: 1.5,
-      render: (row) => (
+      sortable: false,
+      renderCell: (params) => (
         <div className="flex gap-6">
           <ProtectedAction permission="Edit UserTask" title="Edit Task">
             <Edit
               size={18}
               className="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
-              onClick={() => handleEdit(row)}
+              onClick={() => handleEdit(params.row)}
             />
           </ProtectedAction>
 
@@ -107,7 +133,7 @@ const TaskTable: React.FC = () => {
             <Trash2
               size={18}
               className="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
-              onClick={() => handleDelete(row)}
+              onClick={() => handleDelete(params.row)}
             />
           </ProtectedAction>
         </div>
@@ -126,9 +152,7 @@ const TaskTable: React.FC = () => {
       >
         <div className="py-6 px-8 text-center space-y-6">
           <div>
-            <p className="text-gray-700">
-              Are you sure you want to delete the task
-            </p>
+            <p className="text-gray-700">Are you sure you want to delete the task</p>
             <p className="font-semibold text-lg mt-2 text-red-600">
               {deleteTask?.taskName}
             </p>
@@ -157,7 +181,7 @@ const TaskTable: React.FC = () => {
       </Modal>
 
       <div className="w-full">
-        {/* Top Bar: Only Add Button + Page Size */}
+        {/* Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/50">
           <div className="flex items-center gap-4">
             <ProtectedAction permission="Create UserTask" title="Add Task">
@@ -174,22 +198,31 @@ const TaskTable: React.FC = () => {
             <span className="text-sm text-gray-600">
               Total: <strong>{totalCount}</strong> task{totalCount !== 1 ? "s" : ""}
             </span>
-
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Loading */}
         {loading ? (
           <div className="flex items-center justify-center h-[60vh]">
             <CircularProgress />
           </div>
         ) : (
-          <>
-            <VirtualizedTable data={data} columns={columns} height={580} />
+          <Box sx={{ height: 580, width: "100%" }}>
+            <DataGrid
+              rows={data}
+              columns={columns}
+              loading={loading}
+              getRowId={(row) => row.taskID}
 
-            {/* Bottom Pagination */}
-      
-          </>
+              pagination
+              paginationMode="client"   // 👈 client mode
+
+              pageSizeOptions={[5, 10, 20, 50, 100]}
+
+              disableRowSelectionOnClick
+            />
+
+          </Box>
         )}
       </div>
     </>

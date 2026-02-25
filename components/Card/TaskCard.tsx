@@ -108,9 +108,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
           <span className="text-sm" style={{ color: "var(--text-muted)" }}>
             {task.assignedTo || "Unassigned"}
           </span>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-            {task.assignedTo?.[0]?.toUpperCase() || "U"}
-          </div>
+        
         </div>
       </div>
     </div>

@@ -514,9 +514,219 @@
 // export default RoleTable;
 
 // RoleTable.tsx — IDENTICAL UX to UserTablePage
+// import React, { useState } from "react";
+// import { Button, CircularProgress, Pagination } from "@mui/material";
+// import VirtualizedTable, { type Column } from "./VirtualizedTable";
+// import { useNavigate } from "react-router-dom";
+// import { useDataTable } from "../../hooks/useDataTable";
+// import TableFilterBar from "../Table/TableFilterBar";
+// import Modal from "../Modal/Modal";
+// import AssignTasks from "../Tasks/AssignTasks";
+// import api from "../../src/api/axiosClient";
+// import { Edit, FilePlus } from "lucide-react";
+// import Cookies from "js-cookie";
+// import ProtectedAction from "../Auth/ProtectedAction";
+
+// interface RoleRecord {
+//   roleID: number;
+//   roleName: string;
+//   roleKey: string;
+//   color: string;
+//   roleStatus: boolean;
+// }
+
+// interface Task {
+//   id: string;
+//   name: string;
+// }
+
+// const RoleTable: React.FC = () => {
+//   const navigate = useNavigate();
+//   const token = Cookies.get("accessToken") ?? "";
+
+//   const [assignTask, setAssignTask] = useState<RoleRecord | null>(null);
+//   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+//   const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
+
+//   // Server-side data table
+//   const {
+//     loading,
+//     rows: data,
+//     totalCount,
+//     page,
+//     setPage,
+//     pageSize,
+//     setPageSize,
+//     searchTerm,
+//     setSearchTerm,
+//     columnFilters,
+//     setColumnFilters,
+//   } = useDataTable<RoleRecord>({
+//     apiUrl: "/Role/GetAllRoles",
+//     token,
+//     defaultPageSize: 50,
+//   });
+
+//   const handleAssignRoleTask = async (role: RoleRecord) => {
+//     setAssignTask(role);
+//     setAvailableTasks([]);
+//     setAssignedTasks([]);
+
+//     try {
+//       const [assignedRes, availableRes] = await Promise.all([
+//         api.get(`/RoleTask/assigned/${role.roleID}`, { headers: { Authorization: `Bearer ${token}` } }),
+//         api.get(`/RoleTask/available/${role.roleID}`, { headers: { Authorization: `Bearer ${token}` } }),
+//       ]);
+
+//       if (assignedRes.data.isSucceed) {
+//         setAssignedTasks(assignedRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
+//       }
+//       if (availableRes.data.isSucceed) {
+//         setAvailableTasks(availableRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
+//       }
+//     } catch (err) {
+//       console.error("Failed to load tasks:", err);
+//     }
+//   };
+
+//   const columns: Column<RoleRecord>[] = [
+//     { label: "ID", field: "roleID", flex: 0.7 },
+//     { label: "Role Name", field: "roleName", flex: 2, sortable: true },
+//     { label: "Role Key", field: "roleKey", flex: 1.5 },
+//     {
+//       label: "Color",
+//       field: "color",
+//       flex: 1,
+//       render: (row) => (
+//         <div
+//           className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
+//           style={{ backgroundColor: row.color || "#94a3b8" }}
+//         />
+//       ),
+//     },
+//     {
+//       label: "Status",
+//       field: "roleStatus",
+//       flex: 1,
+//       render: (row) => (
+//         <span className={`font-medium ${row.roleStatus ? "text-green-600" : "text-red-600"}`}>
+//           {row.roleStatus ? "Active" : "Inactive"}
+//         </span>
+//       ),
+//     },
+//     {
+//       label: "Actions",
+//       field: "roleID" as keyof RoleRecord,
+//       flex: 2,
+//       render: (row) => (
+//         <div className="flex gap-6">
+//           <ProtectedAction permission="Edit Role" title="Edit Role" onClick={() => navigate(`/role/editrole/${row.roleID}`)}>
+//              <Button size="small" variant="text"><Edit size={18}  /></Button> 
+//           </ProtectedAction>
+
+//           <ProtectedAction permission="Assign RoleTask" title="Assign Tasks" onClick={() => handleAssignRoleTask(row)}>
+//             <Button size="small" variant="text"> <FilePlus size={18}  /></Button>
+//           </ProtectedAction>
+//         </div>
+//       ),
+//     },
+//   ];
+
+//   return (
+//     <div className="w-full">
+//       {/* Assign Task Modal */}
+//       <Modal
+//         isOpen={Boolean(assignTask)}
+//         onClose={() => setAssignTask(null)}
+//         title={`Assign Tasks to: ${assignTask?.roleName}`}
+//         size="full"
+//         closeOnOverlayClick={false}
+//       >
+//         <div className="w-full flex justify-center py-8">
+//           <div className="w-full max-w-5xl">
+//             <AssignTasks
+//               roleId={assignTask?.roleID ?? 0}
+//               availableTasks={availableTasks}
+//               assignedTasks={assignedTasks}
+//               accessToken={token}
+//               setAvailableTasks={setAvailableTasks}
+//               setAssignedTasks={setAssignedTasks}
+//             />
+//           </div>
+//         </div>
+//       </Modal>
+
+//       {/* EXACT SAME FILTER BAR AS USERTABLE */}
+//       <TableFilterBar
+//         searchText={searchTerm}
+//         setSearchText={setSearchTerm}
+//         dropdownFields={["roleStatus"]}
+//         fieldOptions={[
+//           { label: "Role Name", value: "roleName" },
+//           { label: "Role Key", value: "roleKey" },
+//           { label: "Status", value: "roleStatus" },
+//         ]}
+//         selectOptions={{
+//           roleStatus: [
+//             { label: "Active", value: "true" },
+//             { label: "Inactive", value: "false" },
+//           ],
+//         }}
+//         // Bridge dropdown → columnFilters so server filtering works!
+//         // onDropdownChange={(field, value) => {
+//         //   setColumnFilters((prev) => ({
+//         //     ...prev,
+//         //     [field]: value || "", // send empty string to clear filter
+//         //   }));
+//         // }}
+//         onAddClick={() => navigate("/role/addrole")}
+//         addButtonLabel="Add Role"
+//         addButtonPermission="Create Role"
+//         pageSize={pageSize}
+//         setPageSize={setPageSize}
+//         setPage={setPage}
+//       />
+
+//       {/* Table */}
+//       {loading ? (
+//         <div className="flex items-center justify-center h-[60vh]">
+//           <CircularProgress />
+//         </div>
+//       ) : (
+//         <>
+//           <VirtualizedTable
+//             data={data}
+//             columns={columns}
+//             height={520}
+//             // onSort={(field, order) => {
+//             //   // Optional: implement server sorting later
+//             // }}
+//           />
+
+//           <div className="w-[95%] mx-auto flex items-center justify-between mt-2 text-sm">
+//             <div>Showing {data.length} of {totalCount}</div>
+
+//             {pageSize !== "all" && (
+//               <Pagination
+//                 count={Math.ceil(totalCount / (pageSize as number))}
+//                 page={page}
+//                 onChange={(_, p) => setPage(p)}
+//                 size="small"
+//               />
+//             )}
+//           </div>
+//         </>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default RoleTable;
+
+
 import React, { useState } from "react";
-import { Button, CircularProgress, Pagination } from "@mui/material";
-import VirtualizedTable, { type Column } from "./VirtualizedTable";
+import { Button, CircularProgress, Box } from "@mui/material";
+import { DataGrid, type GridColDef, type GridPaginationModel } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useDataTable } from "../../hooks/useDataTable";
 import TableFilterBar from "../Table/TableFilterBar";
@@ -548,7 +758,7 @@ const RoleTable: React.FC = () => {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
 
-  // Server-side data table
+  // Server-side data table hook
   const {
     loading,
     rows: data,
@@ -567,6 +777,12 @@ const RoleTable: React.FC = () => {
     defaultPageSize: 50,
   });
 
+  // Pagination model for DataGrid (0-based index)
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: page - 1,
+    pageSize: pageSize,
+  });
+
   const handleAssignRoleTask = async (role: RoleRecord) => {
     setAssignTask(role);
     setAvailableTasks([]);
@@ -574,58 +790,103 @@ const RoleTable: React.FC = () => {
 
     try {
       const [assignedRes, availableRes] = await Promise.all([
-        api.get(`/RoleTask/assigned/${role.roleID}`, { headers: { Authorization: `Bearer ${token}` } }),
-        api.get(`/RoleTask/available/${role.roleID}`, { headers: { Authorization: `Bearer ${token}` } }),
+        api.get(`/RoleTask/assigned/${role.roleID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        api.get(`/RoleTask/available/${role.roleID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
-      if (assignedRes.data.isSucceed) {
-        setAssignedTasks(assignedRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
+      if (assignedRes.data?.isSucceed) {
+        setAssignedTasks(
+          assignedRes.data.data.map((t: any) => ({
+            id: String(t.taskID),
+            name: t.taskName,
+          }))
+        );
       }
-      if (availableRes.data.isSucceed) {
-        setAvailableTasks(availableRes.data.data.map((t: any) => ({ id: String(t.taskID), name: t.taskName })));
+
+      if (availableRes.data?.isSucceed) {
+        setAvailableTasks(
+          availableRes.data.data.map((t: any) => ({
+            id: String(t.taskID),
+            name: t.taskName,
+          }))
+        );
       }
     } catch (err) {
       console.error("Failed to load tasks:", err);
     }
   };
 
-  const columns: Column<RoleRecord>[] = [
-    { label: "ID", field: "roleID", flex: 0.7 },
-    { label: "Role Name", field: "roleName", flex: 2, sortable: true },
-    { label: "Role Key", field: "roleKey", flex: 1.5 },
+  // DataGrid columns
+  const columns: GridColDef<RoleRecord>[] = [
     {
-      label: "Color",
+      field: "roleID",
+      headerName: "ID",
+      flex: 0.7,
+      sortable: true,
+    },
+    {
+      field: "roleName",
+      headerName: "Role Name",
+      flex: 2,
+      sortable: true,
+    },
+    {
+      field: "roleKey",
+      headerName: "Role Key",
+      flex: 1.5,
+    },
+    {
       field: "color",
+      headerName: "Color",
       flex: 1,
-      render: (row) => (
+      sortable: false,
+      renderCell: (params) => (
         <div
           className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
-          style={{ backgroundColor: row.color || "#94a3b8" }}
+          style={{ backgroundColor: params.value || "#94a3b8" }}
         />
       ),
     },
     {
-      label: "Status",
       field: "roleStatus",
+      headerName: "Status",
       flex: 1,
-      render: (row) => (
-        <span className={`font-medium ${row.roleStatus ? "text-green-600" : "text-red-600"}`}>
-          {row.roleStatus ? "Active" : "Inactive"}
+      sortable: true,
+      renderCell: (params) => (
+        <span className={`font-medium ${params.value ? "text-green-600" : "text-red-600"}`}>
+          {params.value ? "Active" : "Inactive"}
         </span>
       ),
     },
     {
-      label: "Actions",
-      field: "roleID" as keyof RoleRecord,
+      field: "actions",
+      headerName: "Actions",
       flex: 2,
-      render: (row) => (
+      sortable: false,
+      renderCell: (params) => (
         <div className="flex gap-6">
-          <ProtectedAction permission="Edit Role" title="Edit Role" onClick={() => navigate(`/role/editrole/${row.roleID}`)}>
-             <Button size="small" variant="text"><Edit size={18}  /></Button> 
+          <ProtectedAction
+            permission="Edit Role"
+            title="Edit Role"
+            onClick={() => navigate(`/role/editrole/${params.row.roleID}`)}
+          >
+            <Button size="small" variant="text">
+              <Edit size={18} />
+            </Button>
           </ProtectedAction>
 
-          <ProtectedAction permission="Assign RoleTask" title="Assign Tasks" onClick={() => handleAssignRoleTask(row)}>
-            <Button size="small" variant="text"> <FilePlus size={18}  /></Button>
+          <ProtectedAction
+            permission="Assign RoleTask"
+            title="Assign Tasks"
+            onClick={() => handleAssignRoleTask(params.row)}
+          >
+            <Button size="small" variant="text">
+              <FilePlus size={18} />
+            </Button>
           </ProtectedAction>
         </div>
       ),
@@ -656,7 +917,7 @@ const RoleTable: React.FC = () => {
         </div>
       </Modal>
 
-      {/* EXACT SAME FILTER BAR AS USERTABLE */}
+      {/* Filter Bar */}
       <TableFilterBar
         searchText={searchTerm}
         setSearchText={setSearchTerm}
@@ -672,13 +933,6 @@ const RoleTable: React.FC = () => {
             { label: "Inactive", value: "false" },
           ],
         }}
-        // Bridge dropdown → columnFilters so server filtering works!
-        // onDropdownChange={(field, value) => {
-        //   setColumnFilters((prev) => ({
-        //     ...prev,
-        //     [field]: value || "", // send empty string to clear filter
-        //   }));
-        // }}
         onAddClick={() => navigate("/role/addrole")}
         addButtonLabel="Add Role"
         addButtonPermission="Create Role"
@@ -687,36 +941,38 @@ const RoleTable: React.FC = () => {
         setPage={setPage}
       />
 
-      {/* Table */}
-      {loading ? (
-        <div className="flex items-center justify-center h-[60vh]">
-          <CircularProgress />
-        </div>
-      ) : (
-        <>
-          <VirtualizedTable
-            data={data}
-            columns={columns}
-            height={520}
-            // onSort={(field, order) => {
-            //   // Optional: implement server sorting later
-            // }}
-          />
+      {/* DataGrid */}
+      <Box sx={{ height: 520, width: "100%" }}>
+        <DataGrid
+          rows={data}
+          columns={columns}
+          loading={loading}
+          rowCount={totalCount}
+          getRowId={(row) => row.roleID}
 
-          <div className="w-[95%] mx-auto flex items-center justify-between mt-2 text-sm">
-            <div>Showing {data.length} of {totalCount}</div>
+          pagination
+          paginationMode="server"
+          sortingMode="client"
+          disableRowSelectionOnClick
 
-            {pageSize !== "all" && (
-              <Pagination
-                count={Math.ceil(totalCount / (pageSize as number))}
-                page={page}
-                onChange={(_, p) => setPage(p)}
-                size="small"
-              />
-            )}
-          </div>
-        </>
-      )}
+          paginationModel={paginationModel}
+          pageSizeOptions={[10, 20, 50, 100]} // 👈 Rows per page dropdown
+
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+
+            // pageSize changed
+            if (model.pageSize !== pageSize) {
+              setPageSize(model.pageSize);
+              setPage(1); // reset to first page
+              return;
+            }
+
+            // page changed
+            setPage(model.page + 1);
+          }}
+        />
+      </Box>
     </div>
   );
 };

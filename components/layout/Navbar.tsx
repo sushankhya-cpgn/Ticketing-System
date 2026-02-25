@@ -37,7 +37,7 @@ export default function Navbar({ isOpen, toggleSidebar }: { isOpen: boolean; tog
 
   return (
     <div
-      className="flex items-center justify-between px-6 py-3  shadow-md"
+      className="flex items-center justify-between px-6 py-3  shadow-md "
       style={{ background: "var(--background-secondary)", borderColor: "var(--text-muted)" }}
     >
       {/* Left */}
