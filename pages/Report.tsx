@@ -216,8 +216,6 @@
 
 // reports/pages/ReportPage.tsx
 
-import {useReportFilter} from "../hooks/useReportFilter"
-import ReportFilters from "../components/Report/ReportFilter";
 import DynamicReport from "../components/Report/Caption";
 export default function ReportPage() {
 

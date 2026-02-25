@@ -31,6 +31,8 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { useSelector } from "react-redux"; // if user/token in Redux
 // import notificationConnection, { startNotificationConnection } from "./services/signalR/notification";
 import Cookies from "js-cookie";
+import ForgotPassword from "../pages/ForgotPassword";
+import ChangePasswordPage from "../pages/ForgotPassword";
 
 
 
@@ -123,6 +125,8 @@ function App() {
         <Routes>
         
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forget-password" element={<ChangePasswordPage/>}/>
+
           <Route element={<ProtectedRoute />}>
             {/* <Route path="/" element={<InsuranceForm />} /> */}
             <Route path="/" element={<DashboardPage />} />

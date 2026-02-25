@@ -5,10 +5,11 @@ interface StatCardProps {
   value: string | number;
   icon?: React.ReactNode;
   color: string; // Tailwind color class for icon background
+  onClick?:()=> Promise<any>
 }
-function StatCard({ title, value, icon, color }: StatCardProps) {
+function StatCard({ title, value, icon, color,onClick }: StatCardProps) {
   return (
-    <Card className="rounded-2xl shadow-sm">
+    <Card className="rounded-2xl shadow-sm cursor-pointer" onClick={onClick}>
       <CardContent className="flex items-center gap-3">
         <div className={`p-3 rounded-full ${color}`}>
           {icon}

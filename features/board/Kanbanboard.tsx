@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { setBoards, fetchBoards } from "./boardSlice";
@@ -18,11 +18,13 @@ import AttachmentCard from "../../components/Card/AttachmentCard";
 
 
 
+
 interface Reply {
   commentID: number;
   parentCommentID: number | null;
   commentText: string;
   commentedBy: number;
+  commentedByName?: string;
   commentedAt: string;
   replies: Reply[]
 }
@@ -32,6 +34,7 @@ interface Comment {
   parentCommentID: number | null;
   commentText: string;
   commentedBy: number;
+  commentedByName?: string;
   commentedAt: string;
   replies: Reply[];
 }
@@ -60,6 +63,15 @@ interface BoardColumn {
   title: string;
   cards: TaskCardTypes[];
 }
+const DetailRow = ({ label, value }: { label: string; value?: string }) => {
+  if (!value) return null;
+  return (
+    <div>
+      <div style={{ fontSize: 12, opacity: 0.6 }}>{label}</div>
+      <div style={{ fontWeight: 500 }}>{value}</div>
+    </div>
+  );
+};
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, userId, onReply, onDelete }) => {
   const [replyText, setReplyText] = useState("");
@@ -67,7 +79,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, userId, onReply, onD
 
   return (
     <div className="border-l-2 border-gray-300 pl-4 ml-2 mt-2">
-      <p className="font-medium">User {comment.commentedBy}</p>
+      <p className="font-medium">User {comment.commentedByName}</p>
       <p>{comment.commentText}</p>
 
       <div className="flex gap-2 mt-1">
@@ -130,11 +142,15 @@ export default function KanbanBoard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const userId = useSelector((state: RootState) => state.auth.userID)
+  const [searchTicket, setSearchTicket] = useState("");
 
   // ✨ Comment states
   const [commentText, setCommentText] = useState("");
 
+  // const debouncedSearch = useDebounce(searchTicket,300);
 
+
+  const term = searchTicket.toLowerCase();
   // -------------------------
   // LOAD TICKET DETAILS
   // -------------------------
@@ -149,6 +165,11 @@ export default function KanbanBoard() {
     }
   };
 
+  const handleTicketSearch = async (e: any) => {
+    console.log(e.target.value);
+    setSearchTicket(e.target.value);
+  }
+
 
 
   const addComment = async () => {
@@ -162,7 +183,15 @@ export default function KanbanBoard() {
 
     const updated = await KanBanApi.getById(selectedCard.ticketID ?? selectedCard.id);
     setSelectedCard(updated.data.data);
-
+    // const newComment = await TicketApi.addComment({
+    //   ticketId: selectedCard.ticketID ?? selectedCard.id,
+    //   commentText, // top-level comment
+    // });
+    // console.log(newComment.data)
+    // setSelectedCard((prev: any) => ({
+    //   ...prev,
+    //   comments: [...prev.comments, commentText]
+    // }));
     setCommentText("");
   };
 
@@ -279,8 +308,21 @@ export default function KanbanBoard() {
     }
   };
 
+  const filteredBoards = useMemo(() => {
+    if (!term) return boards;
+
+    return boards.map(column => ({
+      ...column,
+      cards: column.cards.filter(card =>
+        card.content?.toLowerCase().includes(term) ||
+        card.description?.toLowerCase().includes(term)
+      )
+    }));
+  }, [boards, term]);
+
   return (
     <div style={{ padding: 20 }} className=" w-full overflow-x-scroll" >
+      <TextFieldComponent label="Search Here" onChange={handleTicketSearch} />
       <DragDropContext onDragEnd={onDragEnd}>
         {/* ------------------------- */}
         {/* TICKET DETAILS MODAL */}
@@ -293,218 +335,146 @@ export default function KanbanBoard() {
         >
           {selectedCard && (
             <div
-              className="flex gap-8 w-full h-full"
               style={{
+                display: "flex",
+                height: "88vh",
                 fontFamily: "'Inter', system-ui, sans-serif",
-                background: "var(--background)",
                 color: "var(--text-foreground)",
               }}
             >
-              {/* ====================== LEFT: COMMENTS ====================== */}
+              {/* ================= LEFT: WORKSPACE ================= */}
               <div
-                className="flex-1 overflow-y-auto pr-4"
                 style={{
-                  background: "var(--background-secondary)",
-                  borderRadius: "16px",
-                  padding: "32px",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-                  border: "1px solid var(--background-accent)",
-                  maxHeight: "90vh",
+                  flex: 1.4,
+                  display: "flex",
+                  flexDirection: "column",
+                  paddingRight: 28,
+                  borderRight: "1px solid var(--background-accent)",
                 }}
               >
-                {/* Title */}
-                <h1
-                  className="text-3xl font-bold mb-6 tracking-tight"
-                  style={{ color: "var(--text-primary)" }}
+                {/* Sticky Header */}
+                <div
+                  style={{
+                    paddingBottom: 16,
+                    marginBottom: 12,
+                  }}
                 >
-                  {selectedCard.title}
-                </h1>
-
-                {/* Description */}
-                {selectedCard.description && (
-                  <div
-                    className="p-6 rounded-2xl mb-8 shadow-inner"
-                    style={{
-                      background: "var(--background)",
-                      border: "1px solid var(--background-accent)",
-                      lineHeight: "1.7",
-                    }}
-                  >
-                    <p style={{ color: "var(--text-secondary)" }}>
-                      {selectedCard.description}
-                    </p>
-                  </div>
-                )}
-
-                {/* Comments Header */}
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-2xl">Comments</span>
-                  <span
-                    className="px-3 py-1 text-sm font-medium rounded-full"
-                    style={{
-                      background: "var(--background-accent)",
-                      color: "var(--text-muted)"
-                    }}
-                  >
-                    {selectedCard.comments?.length || 0}
-                  </span>
+                  <h1 style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.3 }}>
+                    {selectedCard.title}
+                  </h1>
                 </div>
 
-                {/* Add Comment Box */}
+                {/* Scrollable Content */}
+                <div style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>
+                  {selectedCard.description && (
+                    <div style={{ marginBottom: 24, lineHeight: 1.7, fontSize: 15 }}>
+                      {selectedCard.description}
+                    </div>
+                  )}
+
+                  {/* Comments Section */}
+                  <div style={{ marginBottom: 16, fontWeight: 600, fontSize: 16 }}>
+                    Comments ({selectedCard.comments?.length || 0})
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                    {selectedCard.comments?.map((c: Comment) => (
+                      <CommentItem
+                        key={c.commentID}
+                        comment={c}
+                        userId={userId}
+                        onReply={addReply}
+                        onDelete={deleteComment}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Area (Anchored Input) */}
                 <div
-                  className="p-5 rounded-2xl mb-8 shadow-sm border"
                   style={{
-                    background: "var(--background)",
-                    borderColor: "var(--background-accent)",
+                    marginTop: 16,
+                    paddingTop: 12,
+                    borderTop: "1px solid var(--background-accent)",
                   }}
                 >
                   <textarea
-                    placeholder="Write a comment..."
+                    placeholder="Write a comment…"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    className="w-full p-4 rounded-xl resize-none outline-none text-base"
-                    rows={4}
+                    rows={3}
                     style={{
-                      background: "transparent",
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: 10,
                       border: "1px solid var(--background-accent)",
-                      color: "var(--text-foreground)",
+                      resize: "none",
+                      fontSize: 14,
                     }}
                   />
                   {commentText && (
-                    <div className="flex justify-end gap-3 mt-4">
-                      <button
-                        onClick={addComment}
-                        className="px-6 py-2.5 rounded-xl font-medium text-white shadow-lg hover:shadow-xl transition-all"
-                        style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
-                      >
-                        Post Comment
-                      </button>
-                      <button
-                        onClick={() => setCommentText("")}
-                        className="px-5 py-2.5 rounded-xl font-medium"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        Cancel
-                      </button>
+                    <div className="flex justify-end gap-3 mt-2">
+                      <button onClick={addComment}>Post</button>
+                      <button onClick={() => setCommentText("")}>Cancel</button>
                     </div>
                   )}
-                </div>
-
-                {/* Comments List */}
-                <div className="space-y-5">
-                  {selectedCard.comments?.map((c: Comment) => (
-                    <div
-                      key={c.commentID}
-                      className="p-5 rounded-2xl shadow-sm border"
-                      style={{
-                        background: "var(--background)",
-                        borderColor: "var(--background-accent)",
-                      }}
-                    >
-                      <CommentItem comment={c} userId={userId} onReply={addReply} onDelete={deleteComment} />
-                    </div>
-                  ))}
                 </div>
               </div>
 
-              {/* ====================== RIGHT: INFO PANEL ====================== */}
+              {/* ================= RIGHT: SYSTEM PANEL ================= */}
               <div
-                className="w-96 overflow-y-auto"
                 style={{
-                  background: "var(--background-secondary)",
-                  borderRadius: "16px",
-                  padding: "32px",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-                  border: "1px solid var(--background-accent)",
-                  maxHeight: "90vh",
+                  width: 320,
+                  paddingLeft: 28,
+                  overflowY: "auto",
                 }}
               >
-                <h3 className="text-xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 18 }}>
                   Ticket Details
                 </h3>
 
-                <div className="space-y-5 text-base">
-                  {selectedCard.createdByName && (
-                    <div className="flex justify-between">
-                      <span style={{ color: "var(--text-muted)" }}>Creator</span>
-                      <span className="font-medium">{selectedCard.createdByName}</span>
-                    </div>
-                  )}
-
-                  {selectedCard.assignedToName && (
-                    <div className="flex justify-between">
-                      <span style={{ color: "var(--text-muted)" }}>Assigned</span>
-                      <span className="font-medium">{selectedCard.assignedToName}</span>
-                    </div>
-                  )}
-
-                  {selectedCard.priorityName && (
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: "var(--text-muted)" }}>Priority</span>
-                      <span
-                        className="px-4 py-2 rounded-full text-sm font-bold"
-                        style={{
-                          background: selectedCard.priorityName.toLowerCase().includes("high")
-                            ? "rgba(239, 68, 68, 0.15)"
-                            : selectedCard.priorityName.toLowerCase().includes("medium")
-                              ? "rgba(251, 191, 36, 0.15)"
-                              : "rgba(34, 197, 94, 0.15)",
-                          color: selectedCard.priorityName.toLowerCase().includes("high") ? "#dc2626" :
-                            selectedCard.priorityName.toLowerCase().includes("medium") ? "#d97706" : "#16a34a",
-                        }}
-                      >
-                        {selectedCard.priorityName}
-                      </span>
-                    </div>
-                  )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                  <DetailRow label="Creator" value={selectedCard.createdByName} />
+                  <DetailRow label="Assigned" value={selectedCard.assignedToName} />
+                  <DetailRow label="Priority" value={selectedCard.priorityName} />
+                  <DetailRow
+                    label="Created"
+                    value={new Date(selectedCard.createdAt).toLocaleDateString()}
+                  />
 
                   {/* Tags */}
                   <div>
-                    <span style={{ color: "var(--text-muted)" }}>Tags</span>
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 6 }}>Tags</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {selectedCard.tagNames?.length > 0 ? (
                         selectedCard.tagNames.map((tag: string, i: number) => (
                           <span
                             key={i}
-                            className="px-4 py-2 rounded-xl text-sm font-medium"
                             style={{
-                              background: "var(--background-accent)",
-                              color: "var(--text-secondary)",
+                              padding: "4px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--background-accent)",
+                              fontSize: 12,
                             }}
                           >
                             #{tag}
                           </span>
                         ))
                       ) : (
-                        <span style={{ color: "var(--text-muted)" }}>No tags</span>
+                        <span style={{ opacity: 0.6 }}>No tags</span>
                       )}
                     </div>
                   </div>
 
-                  {/* Dates */}
-                  {selectedCard.createdAt && (
-                    <div className="flex justify-between">
-                      <span style={{ color: "var(--text-muted)" }}>Created</span>
-                      <span>{new Date(selectedCard.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  )}
-
                   {/* Attachments */}
                   {selectedCard.attachments?.length > 0 && (
-                    <div className="mt-8 pt-8 border-t" style={{ borderColor: "var(--background-accent)" }}>
-                      <h4 className="font-bold mb-4">Attachments ({selectedCard.attachments.length})</h4>
-                      <div className="space-y-3">
+                    <div>
+                      <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 6 }}>
+                        Attachments ({selectedCard.attachments.length})
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {selectedCard.attachments.map((att: any) => (
-                          <div
-                            key={att.attachmentID}
-                            className="p-4 rounded-xl border shadow-sm hover:shadow-md transition-all cursor-pointer"
-                            style={{
-                              background: "var(--background)",
-                              borderColor: "var(--background-accent)",
-                            }}
-                          >
-                            <AttachmentCard attachment={att} />
-                          </div>
+                          <AttachmentCard key={att.attachmentID} attachment={att} />
                         ))}
                       </div>
                     </div>
@@ -515,58 +485,114 @@ export default function KanbanBoard() {
           )}
         </Modal>
 
+        <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+          {filteredBoards.map((column: BoardColumn) => {
 
-        {/* ------------------------- */}
-        {/* KANBAN COLUMNS */}
-        {/* ------------------------- */}
-        <div style={{ display: "flex", gap: 30 }}>
-          {boards.map((column: BoardColumn) => (
-            <div key={column.id} style={{
-              minWidth: 320,
-              maxWidth: 320,
-              flexShrink: 0,
-            }} 
+            return (<div
+              key={column.id}
+              style={{
+                minWidth: 320,
+                maxWidth: 320,
+                flexShrink: 0,
+                display: "flex",
+                flexDirection: "column",
+                maxHeight: "calc(100vh - 140px)", // makes board height controlled
+              }}
             >
-              <Column title={column.title}>
+              {/* COLUMN CONTAINER */}
+              <div
+                style={{
+                  background: "var(--background-secondary)",
+                  borderRadius: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  overflow: "hidden",
+                  border: "1px solid var(--background-accent)",
+                }}
+              >
+                {/* COLUMN HEADER */}
+                <div
+                  style={{
+                    padding: "14px 16px",
+                    fontWeight: 600,
+                    fontSize: 15,
+                    letterSpacing: 0.3,
+                    position: "sticky",
+                    top: 0,
+                    background: "var(--background-secondary)",
+                    zIndex: 2,
+                    borderBottom: "1px solid var(--background-accent)",
+                  }}
+                >
+                  {column.title}
+                  <span style={{ marginLeft: 8, opacity: 0.6 }}>
+                    ({column.cards.length})
+                  </span>
+                </div>
+
+                {/* TASK LIST AREA */}
                 <Droppable droppableId={column.id.toString()}>
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       style={{
-                        background: snapshot.isDraggingOver ? "#e3f2fd" : "transparent",
-                        padding: 5,
-                        borderRadius: 8,
-                        minHeight: 40,
+                        padding: 12,
+                        overflowY: "auto",
+                        flex: 1,
+                        transition: "box-shadow 0.2s ease",
+                        boxShadow: snapshot.isDraggingOver
+                          ? "inset 0 0 0 2px var(--background-accent)"
+                          : "none",
                       }}
-                      
                     >
-                      {column.cards.map((card, index) => (
-                        <Draggable draggableId={card.id.toString()} index={index} key={card.id}>
-                          {(prov) => (
-                            <div
-                              ref={prov.innerRef}
-                              {...prov.draggableProps}
-                              {...prov.dragHandleProps}
-                              onClick={() => handleCardClick(card)}
-                              style={{ marginBottom: 8, ...prov.draggableProps.style }}
-                              className="w-full"
-                            >
-                              <TaskCard task={card} />
-                            </div>
+                      {column.cards.map((card, index) => {
 
-                          )}
-                        </Draggable>
-                      ))}
+                        return (
+                          <Draggable
+                            draggableId={card.id.toString()}
+                            index={index}
+                            key={card.id}
+                          >
+                            {(prov) => (
+                              <div
+                                ref={prov.innerRef}
+                                {...prov.draggableProps}
+                                {...prov.dragHandleProps}
+                                onClick={() => handleCardClick(card)}
+                                style={{
+                                  marginBottom: 10,
+                                  borderRadius: 14,
+                                  transition: "transform 0.15s ease",
+                                  cursor: "pointer",
+                                  ...prov.draggableProps.style,
+                                }}
+                                onMouseEnter={(e) =>
+                                (e.currentTarget.style.transform =
+                                  "translateY(-2px)")
+                                }
+                                onMouseLeave={(e) =>
+                                (e.currentTarget.style.transform =
+                                  "translateY(0px)")
+                                }
+                              >
+                                <TaskCard task={card} />
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
 
                       {provided.placeholder}
                     </div>
                   )}
                 </Droppable>
-              </Column>
-            </div>
-          ))}
+              </div>
+            </div>)
+          })}
         </div>
+
       </DragDropContext>
     </div>
   );

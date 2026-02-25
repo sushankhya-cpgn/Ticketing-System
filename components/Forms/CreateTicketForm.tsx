@@ -70,31 +70,31 @@ const CreateTicket: React.FC<CreateTicketFormProps> = ({ defaultValues, onSubmit
   const [assignedToOptions, setAssignedToOptions] = useState<{ label: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [existingAttachments,setExistingAttachments] = useState(defaultValues?.attachments || []);
+  const [existingAttachments, setExistingAttachments] = useState(defaultValues?.attachments || []);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAttachment, setSelectedAttachment] = useState<any>(null);
 
 
 
 
-const handleConfirmDelete = async () => {
-  if (!selectedAttachment) return;
+  const handleConfirmDelete = async () => {
+    if (!selectedAttachment) return;
 
-  try {
-    await api.delete(`/Ticket/DeleteAttachment/${selectedAttachment.attachmentID}`);
+    try {
+      await api.delete(`/Ticket/DeleteAttachment/${selectedAttachment.attachmentID}`);
 
-    setExistingAttachments((prev:any) =>
-      prev.filter((att:any) => att.attachmentID !== selectedAttachment.attachmentID)
-    );
+      setExistingAttachments((prev: any) =>
+        prev.filter((att: any) => att.attachmentID !== selectedAttachment.attachmentID)
+      );
 
-    setDeleteModalOpen(false);
-    setSelectedAttachment(null);
+      setDeleteModalOpen(false);
+      setSelectedAttachment(null);
 
-  } catch (error: any) {
-    console.error("Failed to delete attachment:", error);
-    alert(error?.response?.data?.message || "Failed to delete file");
-  }
-};
+    } catch (error: any) {
+      console.error("Failed to delete attachment:", error);
+      alert(error?.response?.data?.message || "Failed to delete file");
+    }
+  };
 
 
 
@@ -135,34 +135,34 @@ const handleConfirmDelete = async () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
       <Modal
-  isOpen={deleteModalOpen}
-  onClose={() => setDeleteModalOpen(false)}
-  title="Delete Attachment?"
-  size="sm"
->
-  <div className="text-center">
-    <p className="mb-4 text-gray-700">
-      Are you sure you want to delete 
-      <span className="font-semibold"> {selectedAttachment?.url?.split('/').pop()}?</span>
-    </p>
-
-    <div className="flex justify-center gap-4 mt-4">
-      <button
-        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-        onClick={() => setDeleteModalOpen(false)}
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Attachment?"
+        size="md"
       >
-        Cancel
-      </button>
+        <div className="text-center">
+          <p className="mb-4 text-gray-700">
+            Are you sure you want to delete
+            <span className="font-semibold"> {selectedAttachment?.url?.split('/').pop()}?</span>
+          </p>
 
-      <button
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        onClick={handleConfirmDelete}
-      >
-        Delete
-      </button>
-    </div>
-  </div>
-</Modal>
+          <div className="flex justify-center gap-4 mt-4">
+            <button
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              onClick={() => setDeleteModalOpen(false)}
+            >
+              Cancel
+            </button>
+
+            <button
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              onClick={handleConfirmDelete}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6" encType="multipart/form-data">
@@ -255,33 +255,33 @@ const handleConfirmDelete = async () => {
                 />
               </div>
 
-{defaultValues?.attachments && defaultValues.attachments.length > 0 && (
-  <div className="p-4">
-      {existingAttachments.length > 0 && (
-  <div className="mt-6 p-4">
-    <h3 className="text-sm font-medium text-gray-700 mb-3">
-      Previously uploaded documents ({existingAttachments.length})
-    </h3>
+              {defaultValues?.attachments && defaultValues.attachments.length > 0 && (
+                <div className="p-4">
+                  {existingAttachments.length > 0 && (
+                    <div className="mt-6 p-4">
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                        Previously uploaded documents ({existingAttachments.length})
+                      </h3>
 
-    <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4">
-        {existingAttachments.map((attachment: any) => (
-    <AttachmentCard
-      key={attachment.attachmentID}
-      attachment={attachment}
-      onDelete={(att:any) => {
-        setSelectedAttachment(att);
-        setDeleteModalOpen(true);
-      }}
-      width="w-40"
-      showDelete={true}
-    />
-  ))}
-    </div>
-  </div>
-)}
+                      <div className="grid grid-cols-6 sm:grid-cols-3 md:grid-cols-6">
+                        {existingAttachments.map((attachment: any) => (
+                          <AttachmentCard
+                            key={attachment.attachmentID}
+                            attachment={attachment}
+                            onDelete={(att: any) => {
+                              setSelectedAttachment(att);
+                              setDeleteModalOpen(true);
+                            }}
+                            width="w-40"
+                            showDelete={true}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-    </div>
-)}
+                </div>
+              )}
             </section>
 
             {/* Submit */}

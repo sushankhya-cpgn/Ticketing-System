@@ -1,4 +1,5 @@
 import api from "../axiosClient";
+import {formatDate} from "../../../utils/dateStandardize"
 
 export const ReportAPI = {
 
@@ -51,6 +52,7 @@ export const ReportAPI = {
     },
 
     getUWRegisterPaidReport: (filters: any) => {
+        console.log(filters.fromDate)
   // map your form filters to backend keys
   const body = {
   OrganizationName: "SALICO",
@@ -60,8 +62,8 @@ export const ReportAPI = {
   UserName: "bikram",
   TypeMode: 0,
   PrintType: "",
-  FromDate: "2025-07-01",
-  ToDate: "2025-07-02",
+  FromDate: formatDate(filters.fromDate) || "2025-07-01",
+  ToDate: formatDate(filters.toDate) || "2025-07-02",
   FY: "",
   MonthCode: 0,
   MonthPeriod: 0,
