@@ -331,25 +331,7 @@ const TableFilterBar: React.FC<TableFilterBarProps> = ({
       {/* LEFT SECTION */}
       <div className="flex gap-4 flex-wrap items-center">
 
-        {/* FIELD SELECTOR */}
-        <SelectSearch
-          label="Field"
-          value={searchField}
-          onChange={handleFieldChange}
-          options={fieldOptions}
-          width="200px"
-        />
-
-        {/* DYNAMIC FIELD INPUT */}
-        {dropdownFields.includes(searchField) ? (
-          <SelectSearch
-            label="Select"
-            value={searchSelect}
-            onChange={handleSelectChange}
-            options={selectOptions[searchField] || []}
-            width="200px"
-          />
-        ) : (
+               
           <TextFieldComponent
             type="text"
             label="Search"
@@ -360,7 +342,7 @@ const TableFilterBar: React.FC<TableFilterBarProps> = ({
             onChange={handleTextChange}
             height="40px"
           />
-        )}
+        
       </div>
 
       {/* RIGHT SECTION */}

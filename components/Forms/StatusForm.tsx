@@ -3,6 +3,7 @@ import TextFieldComponent from "../Fields/TextFieldComponent";
 
 interface StatusFormData {
   statusName: string;
+    isActive: boolean,
 }
 
 interface StatusFormProps {
@@ -14,6 +15,7 @@ const StatusForm = ({ onSubmit, defaultValues }: StatusFormProps) => {
   const methods = useForm<StatusFormData>({
     defaultValues: defaultValues || {
       statusName: "",
+        isActive: true,
     },
   });
 
@@ -47,6 +49,14 @@ const StatusForm = ({ onSubmit, defaultValues }: StatusFormProps) => {
                       height="50px"
                     />
                   </div>
+                      <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            {...register("isActive")}
+                                            className="h-4 w-4"
+                                        />
+                                        <label className="text-sm font-medium">Active</label>
+                                    </div>
                 </div>
               </section>
 

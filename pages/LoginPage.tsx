@@ -32,15 +32,6 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [forgotpassword, setForgotPassword] = useState<boolean>(false)
 
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   formState: { errors },
-  // } = useForm<LoginFormProps>({
-  //   resolver: zodResolver(loginSchema),
-  //   mode: "onChange",
-  // });
-
 
   // For Login Form
   const {
@@ -84,16 +75,6 @@ export default function LoginPage() {
   }
 
 
-  // ---------------------------------------
-  // AUTO-LOGIN FROM COOKIES
-  // ---------------------------------------
-  // useEffect(() => {
-  //   const token = Cookies.get("accessToken");
-  //   if (token && accessToken) {
-  //     navigate("/", { replace: true });
-  //   }
-  // }, [accessToken, navigate]);
-
   const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
@@ -102,7 +83,7 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, loading, navigate]);
 
-  if (loading || isAuthenticated) {
+  if (isAuthenticated) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
         <CircularProgress />
