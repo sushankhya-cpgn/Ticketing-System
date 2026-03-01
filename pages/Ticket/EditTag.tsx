@@ -13,6 +13,7 @@ export default function EditTagPage() {
         const fetchTag = async () => {
             try {
                 const res = await TagApi.getTagById(tagid!);
+                console.log("Fetched tag data:", res.data.data);
                 setDefaultValues(res.data.data);
             } catch (err) {
                 console.error(err);

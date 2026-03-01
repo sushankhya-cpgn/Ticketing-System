@@ -4,10 +4,12 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
-
+const BASE_URL = process.env.VITE_PROJECT_URL 
+// const BASE_URL = process.env.VITE_NETWORK_URL 
+console.log(`Axios client initialized with baseURL: ${BASE_URL}`);
 // Create axios instance
 const api = axios.create({
-  baseURL: "http://192.168.5.8/api",
+  baseURL: BASE_URL,
   timeout: 90000,
 });
 

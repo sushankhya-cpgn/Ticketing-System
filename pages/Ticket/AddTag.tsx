@@ -5,10 +5,10 @@ import { TagApi } from "../../src/api/tagApi";
 
 export default function AddTag() {
     const navigate = useNavigate();
-
     const handleCreateTag = async (data: any) => {
         try {
             await TagApi.createTag(data);
+
             toast.success("Tag Created Successfully");
             navigate("/ticket/tag");
         } catch (err: any) {

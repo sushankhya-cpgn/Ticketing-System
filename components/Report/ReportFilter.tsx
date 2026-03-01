@@ -2,6 +2,9 @@ import { FormProvider } from "react-hook-form";
 import SelectSearch from "../../components/Fields/SelectSearch";
 import DatePickerComponent from "../../components/Fields/DatePicker";
 import TextFieldComponent from "../../components/Fields/TextFieldComponent";
+import { useEffect } from "react";
+import { formatDate } from "../../utils/dateStandardize";
+import dayjs from "dayjs";
 
 export default function ReportFilter({
   methods,
@@ -22,6 +25,37 @@ export default function ReportFilter({
 
   const { setShowFilters, onSubmit } = actions;
 
+  const selectedFiscalYear = methods.watch("fiscalYear");
+  const selectedReportType = methods.watch("reportType");
+
+
+useEffect(() => {
+  if (!selectedFiscalYear) return;
+  const fiscalYearData = fiscalYears.find((fy : any)=> fy.value === selectedFiscalYear);
+  
+  if(!fiscalYearData) return;
+
+  const fiscalYearLabel = fiscalYearData.label;
+  const dateRange = fiscalYearLabel.split(" ").pop();
+  console.log("Selected Fiscal Year:", fiscalYearLabel, "Date Range:", dateRange);
+
+  if(!dateRange) return;
+  const [fromDate, toDate] = dateRange.split("-");
+
+  console.log("Parsed From Date:", fromDate, "Parsed To Date:", toDate);
+
+  const startDate = dayjs(fromDate, "DD/MM/YYYY");
+  const endDate = dayjs(toDate, "DD/MM/YYYY");
+
+  if (startDate.isValid() && endDate.isValid()) {
+    methods.setValue("fromDate", startDate);
+    methods.setValue("toDate", endDate);
+    console.log("Form values set - From Date:", startDate.format("YYYY-MM-DD"), "To Date:", endDate.format("YYYY-MM-DD"));
+  } else {
+    console.warn("Invalid date format in fiscal year label:", fiscalYearLabel);
+  }
+ 
+}, [selectedFiscalYear, fiscalYears, methods]);
   const renderReportFilters = () => {
     return REPORT_FILTERS[reportType]?.map((filter: any) => {
       if (filter.type === "select") {
